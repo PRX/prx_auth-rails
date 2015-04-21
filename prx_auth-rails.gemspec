@@ -8,8 +8,10 @@ Gem::Specification.new do |spec|
   spec.version       = PrxAuth::Rails::VERSION
   spec.authors       = ["Chris Rhoden"]
   spec.email         = ["carhoden@gmail.com"]
-  spec.description   = %q{TODO: Write a gem description}
-  spec.summary       = %q{TODO: Write a gem summary}
+  spec.description   = %q{Rails integration for next generation PRX Authorization system.
+}
+  spec.summary       = %q{Rails integration for next generation PRX Authorization system.
+}
   spec.homepage      = "https://github.com/PRX/prx_auth-rails"
   spec.license       = "MIT"
 

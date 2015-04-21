@@ -3,7 +3,7 @@ require 'prx_auth/rails/ext/controller'
 
 module PrxAuth
   module Rails
-    class Railtie < Rails::Railtie
+    class Railtie < ::Rails::Railtie
       config.to_prepare do
         ApplicationController.send(:include, PrxAuth::Rails::Controller)
       end
