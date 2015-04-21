@@ -4,7 +4,7 @@ module PrxAuth
   module Rails
     class << self
       attr_accessor :middleware
-      self.middleware = true
     end
+    self.middleware = true
   end
 end
