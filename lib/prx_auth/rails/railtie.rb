@@ -1,5 +1,6 @@
 require 'rails/railtie'
 require 'prx_auth/rails/ext/controller'
+require 'rack/prx_auth'
 
 module PrxAuth
   module Rails
@@ -9,7 +10,6 @@ module PrxAuth
       end
 
       initializer 'prx_auth.insert_middleware' do |app|
-        p app.config.middleware
         app.config.middleware.insert_before ActionDispatch::ParamsParser, 'Rack::PrxAuth'
       end
     end
