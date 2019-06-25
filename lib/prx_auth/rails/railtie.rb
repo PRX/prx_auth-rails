@@ -10,7 +10,7 @@ module PrxAuth::Rails
 
     initializer 'prx_auth.insert_middleware' do |app|
       if PrxAuth::Rails.middleware
-        app.config.middleware.insert ActionDispatch::ParamsParser, Rack::PrxAuth
+        app.config.middleware.insert_after Rack::Head, Rack::PrxAuth
       end
     end
   end
