@@ -14,12 +14,8 @@ class PrxAuth::Rails::Token
     @token_data.globally_authorized?(@namespace, scope)
   end
 
-  def attributes
-    @token_data.attributes
-  end
-
-  def authorized_resources
-    @token_data.authorized_resources
+  def resources(scope)
+    @token_data.resources(@namespace, scope)
   end
 
   def scopes
