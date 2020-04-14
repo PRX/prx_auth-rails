@@ -22,6 +22,8 @@ Installing the gem in a Rails project will automatically add the appropriate Rac
 
 ### Configuration
 
+Generally, configuration is not required and the gem aims for great defaults, but you can override some settings if you need to change the default behavior.
+
 In your rails app, add a file to config/initializers called `prx_auth.rb`:
 
 ```ruby
