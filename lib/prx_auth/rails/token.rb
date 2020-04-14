@@ -6,16 +6,19 @@ class PrxAuth::Rails::Token
     @namespace = PrxAuth::Rails.configuration.namespace
   end
 
-  def authorized?(resource, scope)
-    @token_data.authorized?(resource, @namespace, scope)
+  def authorized?(resource, namespace=nil, scope=nil)
+    namespace, scope = @namespace, namespace if scope.nil? && !namespace.nil?
+    @token_data.authorized?(resource, namespace, scope)
   end
 
-  def globally_authorized?(scope)
-    @token_data.globally_authorized?(@namespace, scope)
+  def globally_authorized?(namespace, scope=nil)
+    namespace, scope = @namespace, namespace if scope.nil?
+    @token_data.globally_authorized?(namespace, scope)
   end
 
-  def resources(scope)
-    @token_data.resources(@namespace, scope)
+  def resources(namespace=nil, scope=nil)
+    namespace, scope = @namespace, namespace if scope.nil? && !namespace.nil?
+    @token_data.resources(namespace, scope)
   end
 
   def scopes
