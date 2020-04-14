@@ -3,7 +3,7 @@ require 'rack/prx_auth'
 class PrxAuth::Rails::Token
   def initialize(token_data)
     @token_data = token_data
-    @namespace = PrxAuth::Rails.configuration.namesapce
+    @namespace = PrxAuth::Rails.configuration.namespace
   end
 
   def authorized?(resource, scope)
