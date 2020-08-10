@@ -33,5 +33,5 @@ Gem::Specification.new do |spec|
 
 
 
-  spec.add_runtime_dependency 'rack-prx_auth', "~> 1.0"
+  spec.add_runtime_dependency 'prx_auth', "~> 1.2"
 end
