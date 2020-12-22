@@ -1,0 +1,53 @@
+<script type='application/javascript'>
+
+  function launchFlow(){
+    const idUrl = '<%= @id_host %>';
+    const idParams = '<%= @id_auth_params.html_safe %>';
+
+    window.location = '//' + idUrl + '/authorize?' + idParams;
+  }
+
+  function handleFlowSuccess(hsh){
+    Rails.ajax({
+      url: "/sessions?"+hsh,
+      type: "POST",
+      success: function(resp) {
+        debugger
+        window.location = resp['result_path']
+      },
+      error: function(resp) {
+        debugger
+        window.location = resp['result_path']
+      }
+    });
+  }
+
+  function handleFlowError(err){
+    window.location = '<%= sessions_auth_error_path %>' + '?error=' + err
+  }
+
+  function parseParam(hsh, query){
+    query = query + '='
+    if(!hsh.includes(query)){
+      return null
+    }
+    var target = hsh.split('&')[0]
+    return target.replace(query, '')
+  }
+
+  const hsh = location.hash.replace("#", "")
+  var flowError = parseParam(hsh, 'error')
+
+  if(hsh){
+        debugger
+    handleFlowSuccess(hsh)
+  } else if(flowError){
+        debugger
+    handleFlowError(flowError)
+  }
+  else{
+    launchFlow()
+  }
+
+
+</script>
