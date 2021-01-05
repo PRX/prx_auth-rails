@@ -12,11 +12,9 @@
       url: "/sessions?"+hsh,
       type: "POST",
       success: function(resp) {
-        debugger
         window.location = resp['result_path']
       },
       error: function(resp) {
-        debugger
         window.location = resp['result_path']
       }
     });
@@ -39,10 +37,8 @@
   var flowError = parseParam(hsh, 'error')
 
   if(hsh){
-        debugger
     handleFlowSuccess(hsh)
   } else if(flowError){
-        debugger
     handleFlowError(flowError)
   }
   else{

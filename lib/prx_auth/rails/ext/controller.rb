@@ -10,7 +10,6 @@ module PrxAuth
         session['prx.auth'] && Rack::PrxAuth::TokenData.new(session['prx.auth'])
       end
 
-
       def prx_authenticated?
         !!prx_auth_token
       end
