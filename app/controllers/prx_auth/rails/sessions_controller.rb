@@ -25,15 +25,15 @@ module PrxAuth::Rails
 
     def create
       id_token = params.require('id_token')
-      jwt_id_tok = validate_token(id_token)
+      jwt_id_claims = validate_token(id_token)
 
       access_token = params.require('access_token')
-      jwt_access_tok = validate_token(access_token)
+      jwt_access_claims = validate_token(access_token)
 
-      jwt_access_tok['id_token'] = jwt_id_tok
+      jwt_access_claims['id_token'] = jwt_id_claims
 
-      result_path, code = if valid_nonce?(jwt_id_tok[:nonce])
-                            sign_in_user(jwt_access_tok)
+      result_path, code = if valid_nonce?(jwt_id_claims[:nonce])
+                            sign_in_user(jwt_access_claims)
                             [after_sign_in_path_for(current_user), :ok]
                           else
                             [sessions_auth_error_path(error: 'verification_failed'), :forbidden]
@@ -72,18 +72,10 @@ module PrxAuth::Rails
 
     def validate_token(token)
       proto = Rails.env.development? ? 'http' : 'https'
-      cert_json = URI.parse("#{proto}://#{ENV['ID_HOST']}/api/v1/certs").read
-      ecdsa_x509_cert = JSON.parse(cert_json)['certificates'].values.first
-      ecdsa_pub_key = OpenSSL::X509::Certificate.new(ecdsa_x509_cert).public_key
-      decoded = JWT.decode(token.sub('access_', ''),
-                           ecdsa_pub_key,
-                           true,
-                           algorithm: 'ES256')
-      decoded.present? ? decoded.first.with_indifferent_access : decoded
-
-      decoded.first.with_indifferent_access
+      cert_location = "#{proto}://#{ENV['ID_HOST']}/api/v1/certs"
+      prx_auth_cert = Rack::PrxAuth::Certificate.new("#{proto}://#{ENV['ID_HOST']}/api/v1/certs")
+      auth_validator = Rack::PrxAuth::AuthValidator.new(token, prx_auth_cert, ENV['ID_HOST'])
+      auth_validator.claims
     end
-
-
   end
 end
