@@ -1,7 +1,6 @@
 require 'coveralls'
-Coveralls.wear!
 
-$LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
+Coveralls.wear!
 
 require 'minitest/autorun'
 require 'minitest/spec'
@@ -12,13 +11,27 @@ require 'action_view'
 require 'rails'
 require 'rails/generators'
 require 'rails/generators/test_case'
-# Bundler.require(:default)
-
-class TestApp < Rails::Application
-  config.root = File.dirname(__FILE__)
-  config.eager_load = false
-end
-
-TestApp.initialize!
+require 'pry'
 
 require 'prx_auth/rails'
+
+
+# Configure Rails Environment
+ENV["RAILS_ENV"] = "test"
+ENV['ID_HOST'] = 'id.prx.test'
+ENV['PRX_CLIENT_ID'] = '12345'
+
+
+require_relative "../test/dummy/config/environment"
+ActiveRecord::Migrator.migrations_paths = [File.expand_path("../test/dummy/db/migrate", __dir__)]
+ActiveRecord::Migrator.migrations_paths << File.expand_path('../db/migrate', __dir__)
+require "rails/test_help"
+
+
+# Load fixtures from the engine
+if ActiveSupport::TestCase.respond_to?(:fixture_path=)
+  ActiveSupport::TestCase.fixture_path = File.expand_path("fixtures", __dir__)
+  ActionDispatch::IntegrationTest.fixture_path = ActiveSupport::TestCase.fixture_path
+  ActiveSupport::TestCase.file_fixture_path = ActiveSupport::TestCase.fixture_path + "/files"
+  ActiveSupport::TestCase.fixtures :all
+end

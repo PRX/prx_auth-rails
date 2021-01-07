@@ -4,9 +4,9 @@ describe PrxAuth::Rails::Configuration do
 
   after(:each) { PrxAuth::Rails.configuration =  PrxAuth::Rails::Configuration.new }
   subject { PrxAuth::Rails::Configuration.new }
-  
+
   it 'initializes with a namespace defined by rails app name' do
-    assert subject.namespace == :test_app
+    assert subject.namespace == :'dummy/application'
   end
 
   it 'can be reconfigured using the namespace attr' do

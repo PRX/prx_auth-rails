@@ -14,6 +14,10 @@ rdoc
 spec/reports
 test/tmp
 test/version_tmp
+test/dummy/db/
+test/dummy/log/development.log
+test/dummy/log/test.log
+test/log/test.log
 tmp
 .ruby-version
 .DS_Store
