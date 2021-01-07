@@ -1,5 +1,8 @@
 class PrxAuth::Rails::Configuration
-  attr_accessor :install_middleware, :namespace
+  attr_accessor :install_middleware,
+                :namespace,
+                :prx_client_id
+
 
   def initialize
     @install_middleware = true
@@ -12,6 +15,7 @@ class PrxAuth::Rails::Configuration
                    end
 
       @namespace = klass_name.underscore.intern
+      @prx_client_id = nil
     end
   end
 end

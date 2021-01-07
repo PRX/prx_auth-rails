@@ -2,16 +2,18 @@ require 'open-uri'
 
 module PrxAuth::Rails
   class SessionsController < ApplicationController
+    include PrxAuth::Rails::Engine.routes.url_helpers
+
     skip_before_action :authenticate!
 
     before_action :set_nonce!, only: :show
 
-    ID_NONCE_SESSION_KEY = :id_prx_openid_nonce
+    ID_NONCE_SESSION_KEY = 'id_prx_openid_nonce'
 
     def show
       @id_host = ENV['ID_HOST']
       @id_auth_params = {
-        client_id: ENV['PRX_CLIENT_ID'],
+        client_id: PrxAuth::Rails.configuration.prx_client_id,
         nonce: fetch_nonce,
         response_type: 'id_token token',
         scope: 'openid apps',
@@ -30,9 +32,9 @@ module PrxAuth::Rails
       access_token = params.require('access_token')
       jwt_access_claims = validate_token(access_token)
 
-      jwt_access_claims['id_token'] = jwt_id_claims
+      jwt_access_claims['id_token'] = jwt_id_claims.as_json
 
-      result_path, code = if valid_nonce?(jwt_id_claims[:nonce])
+      result_path, code = if valid_nonce?(jwt_id_claims['nonce'])
                             sign_in_user(jwt_access_claims)
                             [after_sign_in_path_for(current_user), :ok]
                           else
@@ -75,7 +77,9 @@ module PrxAuth::Rails
       cert_location = "#{proto}://#{ENV['ID_HOST']}/api/v1/certs"
       prx_auth_cert = Rack::PrxAuth::Certificate.new("#{proto}://#{ENV['ID_HOST']}/api/v1/certs")
       auth_validator = Rack::PrxAuth::AuthValidator.new(token, prx_auth_cert, ENV['ID_HOST'])
-      auth_validator.claims
+      auth_validator.
+        claims.
+        with_indifferent_access
     end
   end
 end

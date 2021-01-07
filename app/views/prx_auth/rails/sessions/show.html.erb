@@ -9,7 +9,7 @@
 
   function handleFlowSuccess(hsh){
     Rails.ajax({
-      url: "/sessions?"+hsh,
+      url: "<%= PrxAuth::Rails::Engine.routes.url_helpers.sessions_path %>?"+hsh,
       type: "POST",
       success: function(resp) {
         window.location = resp['result_path']
@@ -21,7 +21,7 @@
   }
 
   function handleFlowError(err){
-    window.location = '<%= sessions_auth_error_path %>' + '?error=' + err
+    window.location = '<%= PrxAuth::Rails::Engine.routes.url_helpers.sessions_auth_error_path %>' + '?error=' + err
   }
 
   function parseParam(hsh, query){
