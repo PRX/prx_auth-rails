@@ -30,6 +30,6 @@ class PrxAuth::Rails::Token
   end
 
   def authorized_account_ids(scope)
-    resources(scope).map(&:to_i)
+    @token_data.authorized_account_ids(scope)
   end
 end
