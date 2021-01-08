@@ -1,6 +1,5 @@
 require "test_helper"
 
-
 module PrxAuth::Rails
   class SessionsControllerTest < ActionController::TestCase
 

@@ -8,7 +8,7 @@ module PrxAuth::Rails
 
     before_action :set_nonce!, only: :show
 
-    ID_NONCE_SESSION_KEY = 'id_prx_openid_nonce'
+    ID_NONCE_SESSION_KEY = 'id_prx_openid_nonce'.freeze
 
     def show
       @id_host = ENV['ID_HOST']

@@ -15,7 +15,6 @@ require 'pry'
 
 require 'prx_auth/rails'
 
-
 # Configure Rails Environment
 ENV["RAILS_ENV"] = "test"
 ENV['ID_HOST'] = 'id.prx.test'
