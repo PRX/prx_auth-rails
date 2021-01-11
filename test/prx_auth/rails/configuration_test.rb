@@ -2,7 +2,6 @@ require 'test_helper'
 
 describe PrxAuth::Rails::Configuration do
 
-  after(:each) { PrxAuth::Rails.configuration =  PrxAuth::Rails::Configuration.new }
   subject { PrxAuth::Rails::Configuration.new }
 
   it 'initializes with a namespace defined by rails app name' do
@@ -10,21 +9,17 @@ describe PrxAuth::Rails::Configuration do
   end
 
   it 'can be reconfigured using the namespace attr' do
-    PrxAuth::Rails.configure do |config|
-      config.namespace = :new_test
-    end
+    subject.namespace = :new_test
 
-    assert PrxAuth::Rails.configuration.namespace == :new_test
+    assert subject.namespace == :new_test
   end
 
   it 'defaults to enabling the middleware' do
-    assert PrxAuth::Rails.configuration.install_middleware
+    assert subject.install_middleware
   end
 
   it 'allows overriding of the middleware automatic installation' do
-    PrxAuth::Rails.configure do |config|
-      config.install_middleware = false
-    end
-    assert !PrxAuth::Rails.configuration.install_middleware
+    subject.install_middleware = false
+    assert subject.install_middleware == false
   end
 end
