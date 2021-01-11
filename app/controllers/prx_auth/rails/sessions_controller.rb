@@ -26,15 +26,13 @@ module PrxAuth::Rails
     end
 
     def create
-      id_token = params.require('id_token')
-      jwt_id_claims = validate_token(id_token)
-
-      access_token = params.require('access_token')
-      jwt_access_claims = validate_token(access_token)
+      jwt_id_claims = id_claims
+      jwt_access_claims = access_claims
 
       jwt_access_claims['id_token'] = jwt_id_claims.as_json
 
-      result_path, code = if valid_nonce?(jwt_id_claims['nonce'])
+      result_path, code = if valid_nonce?(jwt_id_claims['nonce']) &&
+                              users_match?(jwt_id_claims, jwt_access_claims)
                             sign_in_user(jwt_access_claims)
                             [after_sign_in_path_for(current_user), :ok]
                           else
@@ -50,6 +48,16 @@ module PrxAuth::Rails
     end
 
     private
+
+    def id_claims
+      id_token = params.require('id_token')
+      validate_token(id_token)
+    end
+
+    def access_claims
+      access_token = params.require('access_token')
+      validate_token(access_token)
+    end
 
     def reset_nonce!
       session[ID_NONCE_SESSION_KEY] = nil
@@ -70,6 +78,12 @@ module PrxAuth::Rails
       return false if fetch_nonce.nil?
 
       fetch_nonce == nonce
+    end
+
+    def users_match?(claims1, claims2)
+      return false if claims1['sub'].nil? || claims2['sub'].nil?
+
+      claims1['sub'] == claims2['sub']
     end
 
     def validate_token(token)

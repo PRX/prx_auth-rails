@@ -6,6 +6,8 @@ module PrxAuth::Rails
     setup do
       @routes = PrxAuth::Rails::Engine.routes
       @nonce_session_key = SessionsController::ID_NONCE_SESSION_KEY
+      @token_params = {id_token: 'sometok', access_token: 'othertok'}
+      @stub_claims = {'nonce' => '123', 'sub' => '1'}
     end
 
     test "show creates nonce each time" do
@@ -29,25 +31,25 @@ module PrxAuth::Rails
     end
 
     test 'create should validate a token and set the session variable' do
-      @controller.stub(:validate_token, {'nonce' => '123'}) do
+      @controller.stub(:validate_token, @stub_claims) do
         session[@nonce_session_key] = '123'
-        post :create, params: {id_token: 'sometok', access_token: 'othertok'}, format: :json
+        post :create, params: @token_params, format: :json
         assert session['prx.auth']['id_token']['nonce'] == '123'
       end
     end
 
     test 'create should call test_nonce! if upon verification' do
-      @controller.stub(:validate_token, {'nonce' => 'not matching'}) do
+      @controller.stub(:validate_token, {'nonce' => 'not matching', 'aud' => '1'}) do
         session[@nonce_session_key] = 'nonce'
-        post :create, params: {id_token: 'sometok', access_token: 'othertok'}, format: :json
+        post :create, params: @token_params, format: :json
         assert session[@nonce_session_key] == nil
       end
     end
 
     test 'create should reset the nonce after consumed' do
-      @controller.stub(:validate_token, {'nonce' => '123'}) do
+      @controller.stub(:validate_token, @stub_claims) do
         session[@nonce_session_key] = '123'
-        post :create, params: {id_token: 'sometok', access_token: 'othertok'}, format: :json
+        post :create, params: @token_params, format: :json
 
         assert session[@nonce_session_key] == nil
         assert response.code == '200'
@@ -55,9 +57,9 @@ module PrxAuth::Rails
     end
 
     test 'should respond with auth error page / code if the nonce does not match' do
-      @controller.stub(:validate_token, {'nonce' => '123'}) do
-        session[@nonce_session_key] = 'nonce'
-        post :create, params: {id_token: 'sometok', access_token: 'othertok'}, format: :json
+      @controller.stub(:validate_token, @stub_claims) do
+        session[@nonce_session_key] = 'nonce-does-not-match'
+        post :create, params: @token_params, format: :json
         assert response.code == '403'
         assert response.body.match(/verification_failed/)
       end
@@ -74,5 +76,17 @@ module PrxAuth::Rails
       end
     end
 
+    test 'validates that the user id matches in both tokens' do
+      @controller.stub(:id_claims, @stub_claims) do
+        @controller.stub(:access_claims, @stub_claims.merge('sub' => '444')) do
+
+        session[@nonce_session_key] = '123'
+        post :create, params: @token_params, format: :json
+
+        assert response.code == '403'
+        assert response.body.match?(/error=verification_failed/)
+      end
+      end
+    end
   end
 end
