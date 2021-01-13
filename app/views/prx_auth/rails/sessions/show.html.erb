@@ -1,4 +1,4 @@
-<div style="display:inline;">
+<div style="display:none;">
   <%= form_for(:sessions, :url => PrxAuth::Rails::Engine.routes.url_helpers.sessions_path) do |f| %>
       <%= hidden_field_tag :access_token, '', id: 'access-token-field' %>
       <%= hidden_field_tag :id_token, '', id: 'id-token-field' %>
