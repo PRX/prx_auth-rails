@@ -13,15 +13,17 @@ module PrxAuth::Rails
     def new
       set_nonce! unless fetch_nonce.present?
 
+      config = PrxAuth::Rails.configuration
+
       id_auth_params = {
-        client_id: PrxAuth::Rails.configuration.prx_client_id,
+        client_id: config.prx_client_id,
         nonce: fetch_nonce,
         response_type: 'id_token token',
         scope: 'openid apps',
         prompt: 'necessary'
       }
 
-      redirect_to '//' + ENV['ID_HOST'] + '/authorize?' + id_auth_params.to_query
+      redirect_to '//' + config.id_host + '/authorize?' + id_auth_params.to_query
     end
 
     def show
@@ -89,10 +91,9 @@ module PrxAuth::Rails
     end
 
     def validate_token(token)
-      proto = Rails.env.development? ? 'http' : 'https'
-      cert_location = "#{proto}://#{ENV['ID_HOST']}/api/v1/certs"
-      prx_auth_cert = Rack::PrxAuth::Certificate.new("#{proto}://#{ENV['ID_HOST']}/api/v1/certs")
-      auth_validator = Rack::PrxAuth::AuthValidator.new(token, prx_auth_cert, ENV['ID_HOST'])
+      id_host = PrxAuth::Rails.configuration.id_host
+      prx_auth_cert = Rack::PrxAuth::Certificate.new("https://#{id_host}/api/v1/certs")
+      auth_validator = Rack::PrxAuth::AuthValidator.new(token, prx_auth_cert, id_host)
       auth_validator.
         claims.
         with_indifferent_access

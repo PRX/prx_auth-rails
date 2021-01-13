@@ -30,7 +30,6 @@ module PrxAuth
         session['prx.auth'] = token
       end
 
-
       private
 
       def env_prx_auth_token
