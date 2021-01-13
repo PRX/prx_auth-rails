@@ -53,6 +53,12 @@ module PrxAuth::Rails
 
     private
 
+    def after_sign_in_path_for(_)
+      return super if defined?(super)
+
+      "/"
+    end
+
     def id_claims
       id_token = params.require('id_token')
       validate_token(id_token)
