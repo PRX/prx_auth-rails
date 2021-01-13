@@ -5,7 +5,7 @@ describe PrxAuth::Rails::Configuration do
   subject { PrxAuth::Rails::Configuration.new }
 
   it 'initializes with a namespace defined by rails app name' do
-    assert subject.namespace == :'dummy/application'
+    assert subject.namespace == :dummy
   end
 
   it 'can be reconfigured using the namespace attr' do
