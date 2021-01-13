@@ -9,17 +9,28 @@ describe PrxAuth::Rails::Configuration do
   end
 
   it 'can be reconfigured using the namespace attr' do
-    subject.namespace = :new_test
+    PrxAuth::Rails.stub(:configuration, subject) do
+      PrxAuth::Rails.configure do |config|
+        config.namespace = :new_test
+      end
 
-    assert subject.namespace == :new_test
+      assert PrxAuth::Rails.configuration.namespace == :new_test
+    end
   end
 
   it 'defaults to enabling the middleware' do
-    assert subject.install_middleware
+    PrxAuth::Rails.stub(:configuration, subject) do
+      assert PrxAuth::Rails.configuration.install_middleware
+    end
   end
 
   it 'allows overriding of the middleware automatic installation' do
-    subject.install_middleware = false
-    assert subject.install_middleware == false
+    PrxAuth::Rails.stub(:configuration, subject) do
+      PrxAuth::Rails.configure do |config|
+        config.install_middleware = false
+      end
+
+      assert !PrxAuth::Rails.configuration.install_middleware
+    end
   end
 end
