@@ -10,15 +10,21 @@ module PrxAuth::Rails
 
     ID_NONCE_SESSION_KEY = 'id_prx_openid_nonce'.freeze
 
-    def show
-      @id_host = ENV['ID_HOST']
-      @id_auth_params = {
+    def new
+      set_nonce! unless fetch_nonce.present?
+
+      id_auth_params = {
         client_id: PrxAuth::Rails.configuration.prx_client_id,
         nonce: fetch_nonce,
         response_type: 'id_token token',
         scope: 'openid apps',
         prompt: 'necessary'
-      }.to_query
+      }
+
+      redirect_to '//' + ENV['ID_HOST'] + '/authorize?' + id_auth_params.to_query
+    end
+
+    def show
     end
 
     def auth_error
@@ -31,20 +37,16 @@ module PrxAuth::Rails
 
       jwt_access_claims['id_token'] = jwt_id_claims.as_json
 
-      result_path, code = if valid_nonce?(jwt_id_claims['nonce']) &&
-                              users_match?(jwt_id_claims, jwt_access_claims)
-                            sign_in_user(jwt_access_claims)
-                            [after_sign_in_path_for(current_user), :ok]
-                          else
-                            [sessions_auth_error_path(error: 'verification_failed'), :forbidden]
-                          end
+      result_path = if valid_nonce?(jwt_id_claims['nonce']) &&
+                        users_match?(jwt_id_claims, jwt_access_claims)
+                      sign_in_user(jwt_access_claims)
+                      after_sign_in_path_for(current_user)
+                    else
+                      auth_error_sessions_path(error: 'verification_failed')
+                    end
       reset_nonce!
 
-      respond_to do |format|
-        format.json do
-          render json: { result_path: result_path }, status: code
-        end
-      end
+      redirect_to result_path
     end
 
     private

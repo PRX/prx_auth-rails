@@ -1,5 +1,7 @@
 PrxAuth::Rails::Engine.routes.draw do
-  get 'sessions', to: 'prx_auth/rails/sessions#show'
-  post 'sessions', to: 'prx_auth/rails/sessions#create'
-  get 'sessions/auth_error', to: 'prx_auth/rails/sessions#auth_error'
+  scope module: 'prx_auth/rails' do
+    resource 'sessions', except: :index, :defaults => { :format => 'html' } do
+      get 'auth_error', to: 'sessions#auth_error'
+    end
+  end
 end

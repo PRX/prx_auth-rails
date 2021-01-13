@@ -17,7 +17,7 @@ module PrxAuth
       def authenticate!
         return true if current_user.present?
 
-        redirect_to PrxAuth::Rails::Engine.routes.url_helpers.sessions_path
+        redirect_to PrxAuth::Rails::Engine.routes.url_helpers.new_sessions_path
       end
 
       def current_user

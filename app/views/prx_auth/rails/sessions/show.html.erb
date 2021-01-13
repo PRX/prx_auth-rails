@@ -1,49 +1,38 @@
+<div style="display:inline;">
+  <%= form_for(:sessions, :url => PrxAuth::Rails::Engine.routes.url_helpers.sessions_path) do |f| %>
+      <%= hidden_field_tag :access_token, '', id: 'access-token-field' %>
+      <%= hidden_field_tag :id_token, '', id: 'id-token-field' %>
+      <%= f.submit id: 'sessions-form-submit' %>
+  <% end %>
+</div>
+
 <script type='application/javascript'>
 
-  function launchFlow(){
-    const idUrl = '<%= @id_host %>';
-    const idParams = '<%= @id_auth_params.html_safe %>';
+  function parseURLFragment() {
+    let hashParams = {};
+    let e,
+      a = /\+/g,  // Regex for replacing addition symbol with a space
+      r = /([^&;=]+)=?([^&;]*)/g,
+      d = function (s) { return decodeURIComponent(s.replace(a, " ")); },
+      q = window.location.hash.substring(1);
 
-    window.location = '//' + idUrl + '/authorize?' + idParams;
+    while (e = r.exec(q))
+      hashParams[d(e[1])] = d(e[2]);
+
+    return hashParams;
   }
 
-  function handleFlowSuccess(hsh){
-    Rails.ajax({
-      url: "<%= PrxAuth::Rails::Engine.routes.url_helpers.sessions_path %>?"+hsh,
-      type: "POST",
-      success: function(resp) {
-        window.location = resp['result_path']
-      },
-      error: function(resp) {
-        window.location = resp['result_path']
-      }
-    });
-  }
+window.addEventListener("load", () => {
+  var idToken = document.querySelector("#id-token-field");
+  var accessToken = document.querySelector("#access-token-field");
+  var submit = document.querySelector("input#sessions-form-submit[type=submit]");
 
-  function handleFlowError(err){
-    window.location = '<%= PrxAuth::Rails::Engine.routes.url_helpers.sessions_auth_error_path %>' + '?error=' + err
-  }
+  var hashParams = parseURLFragment();
 
-  function parseParam(hsh, query){
-    query = query + '='
-    if(!hsh.includes(query)){
-      return null
-    }
-    var target = hsh.split('&')[0]
-    return target.replace(query, '')
-  }
+  accessToken.value = hashParams['access_token'];
+  idToken.value = hashParams['id_token'];
 
-  const hsh = location.hash.replace("#", "")
-  var flowError = parseParam(hsh, 'error')
-
-  if(hsh){
-    handleFlowSuccess(hsh)
-  } else if(flowError){
-    handleFlowError(flowError)
-  }
-  else{
-    launchFlow()
-  }
-
+  submit.click();
+});
 
 </script>

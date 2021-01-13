@@ -10,22 +10,22 @@ module PrxAuth::Rails
       @stub_claims = {'nonce' => '123', 'sub' => '1'}
     end
 
-    test "show creates nonce each time" do
+    test "new creates nonce" do
       nonce = session[@nonce_session_key]
       assert nonce == nil
 
-      get :show
+      get :new
 
       nonce = session[@nonce_session_key]
       assert nonce.match(/[a-zA-Z\d]{32}/)
       assert nonce.length == 32
     end
 
-    test 'show should should not overwrite the saved nonce' do
-      get :show
+    test 'new should should not overwrite the saved nonce' do
+      get :new
       nonce1 = session[@nonce_session_key]
 
-      get :show
+      get :new
       nonce2 = session[@nonce_session_key]
       assert nonce1 == nonce2
     end
@@ -52,16 +52,17 @@ module PrxAuth::Rails
         post :create, params: @token_params, format: :json
 
         assert session[@nonce_session_key] == nil
-        assert response.code == '200'
+        assert response.code == '302'
+        assert response.body.match?(/after-sign-in-path/)
       end
     end
 
-    test 'should respond with auth error page / code if the nonce does not match' do
+    test 'should respond with aredirect to the auth error page / code if the nonce does not match' do
       @controller.stub(:validate_token, @stub_claims) do
         session[@nonce_session_key] = 'nonce-does-not-match'
         post :create, params: @token_params, format: :json
-        assert response.code == '403'
-        assert response.body.match(/verification_failed/)
+        assert response.code == '302'
+        assert response.body.match(/auth_error\?error=verification_failed/)
       end
     end
 
@@ -84,7 +85,7 @@ module PrxAuth::Rails
         session[@nonce_session_key] = '123'
         post :create, params: @token_params, format: :json
 
-        assert response.code == '403'
+        assert response.code == '302'
         assert response.body.match?(/error=verification_failed/)
       end
       end
