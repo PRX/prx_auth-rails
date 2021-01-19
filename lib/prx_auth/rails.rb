@@ -1,6 +1,7 @@
 require "prx_auth/rails/version"
 require "prx_auth/rails/configuration"
 require "prx_auth/rails/railtie" if defined?(Rails)
+require "prx_auth/rails/engine" if defined?(Rails)
 
 module PrxAuth
   module Rails

@@ -28,4 +28,8 @@ class PrxAuth::Rails::Token
   def user_id
     @token_data.user_id
   end
+
+  def authorized_account_ids(scope)
+    @token_data.authorized_account_ids(scope)
+  end
 end
