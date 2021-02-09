@@ -42,6 +42,7 @@ module PrxAuth::Rails
       result_path = if valid_nonce?(jwt_id_claims['nonce']) &&
                         users_match?(jwt_id_claims, jwt_access_claims)
                       sign_in_user(jwt_access_claims)
+                      lookup_and_register_accounts_names
                       after_sign_in_path_for(current_user)
                     else
                       auth_error_sessions_path(error: 'verification_failed')
@@ -52,6 +53,18 @@ module PrxAuth::Rails
     end
 
     private
+
+    def lookup_and_register_accounts_names
+      id_host = PrxAuth::Rails.configuration.id_host
+
+      options = { 'Authorization' => "Bearer #{params.require('id_token')}" }
+      options[:ssl_verify_mode] = OpenSSL::SSL::VERIFY_NONE if Rails.env.development?
+
+      accounts = URI.open("https://#{id_host}/api/v1/accounts?account_ids=#{current_user.resources.join(',')}", options).read
+
+      mapping = JSON.parse(accounts)['accounts'].map { |acct| [acct['id'], acct['display_name']] }.to_h
+      session[PrxAuth::Rails::Controller::PRX_ACCOUNT_NAME_MAPPING_KEY] = mapping
+    end
 
     def after_sign_in_path_for(_)
       return super if defined?(super)

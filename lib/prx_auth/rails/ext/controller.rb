@@ -3,6 +3,9 @@ require 'prx_auth/rails/token'
 module PrxAuth
   module Rails
     module Controller
+
+      PRX_ACCOUNT_NAME_MAPPING_KEY = 'prx.account.name.mapping'.freeze
+
       def prx_auth_token
         rack_auth_token = env_prx_auth_token
         return rack_auth_token if rack_auth_token.present?
@@ -24,6 +27,16 @@ module PrxAuth
         return if prx_auth_token.nil?
 
         PrxAuth::Rails::Token.new(prx_auth_token)
+      end
+
+      def account_name_for(id)
+        return "Unknown #{id}" unless session['prx.account.name.mapping'].present?
+
+        name = session[PRX_ACCOUNT_NAME_MAPPING_KEY][id]
+
+        name = "Unknown #{id}" unless name.present?
+
+        name
       end
 
       def sign_in_user(token)
