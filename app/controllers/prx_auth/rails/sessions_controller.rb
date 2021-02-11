@@ -57,7 +57,7 @@ module PrxAuth::Rails
     def lookup_and_register_accounts_names
       id_host = PrxAuth::Rails.configuration.id_host
 
-      options = { 'Authorization' => "Bearer #{params.require('id_token')}" }
+      options = {}
       options[:ssl_verify_mode] = OpenSSL::SSL::VERIFY_NONE if Rails.env.development?
 
       accounts = URI.open("https://#{id_host}/api/v1/accounts?account_ids=#{current_user.resources.join(',')}", options).read
