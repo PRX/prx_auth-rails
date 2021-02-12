@@ -57,8 +57,10 @@ module PrxAuth
       private
 
       def lookup_account_name_for(id)
+        id = id.to_i
+
         res = lookup_account_names_mapping([id])
-        res[id.to_i]
+        res[id]
       end
 
       def lookup_account_names_mapping(ids=current_user.resources)
