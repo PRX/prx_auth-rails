@@ -42,7 +42,7 @@ module PrxAuth
           if session[PRX_ACCOUNT_NAME_MAPPING_KEY].has_key?(id)
             session[PRX_ACCOUNT_NAME_MAPPING_KEY][id]
           else
-            lookup_account_name_for(id)
+            session[PRX_ACCOUNT_NAME_MAPPING_KEY][id] = lookup_account_name_for(id)
           end
 
         name = "[#{id}] Unknown Account Name" unless name.present?
