@@ -1,5 +1,3 @@
-require 'open-uri'
-
 module PrxAuth::Rails
   class SessionsController < ApplicationController
     include PrxAuth::Rails::Engine.routes.url_helpers
@@ -42,6 +40,7 @@ module PrxAuth::Rails
       result_path = if valid_nonce?(jwt_id_claims['nonce']) &&
                         users_match?(jwt_id_claims, jwt_access_claims)
                       sign_in_user(jwt_access_claims)
+                      lookup_and_register_accounts_names
                       after_sign_in_path_for(current_user)
                     else
                       auth_error_sessions_path(error: 'verification_failed')
