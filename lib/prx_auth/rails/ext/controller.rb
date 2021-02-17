@@ -39,6 +39,8 @@ module PrxAuth
       def account_name_for(id)
         id = id.to_i
 
+        session[PRX_ACCOUNT_NAME_MAPPING_KEY] ||= {}
+
         name =
           if session[PRX_ACCOUNT_NAME_MAPPING_KEY].has_key?(id)
             session[PRX_ACCOUNT_NAME_MAPPING_KEY][id]
