@@ -32,9 +32,11 @@ module PrxAuth::Rails
 
     test 'create should validate a token and set the session variable' do
       @controller.stub(:validate_token, @stub_claims) do
-        session[@nonce_session_key] = '123'
-        post :create, params: @token_params, format: :json
-        assert session['prx.auth']['id_token']['nonce'] == '123'
+        @controller.stub(:lookup_account_names_mapping, {}) do
+          session[@nonce_session_key] = '123'
+          post :create, params: @token_params, format: :json
+          assert session['prx.auth']['id_token']['nonce'] == '123'
+        end
       end
     end
 
@@ -48,16 +50,18 @@ module PrxAuth::Rails
 
     test 'create should reset the nonce after consumed' do
       @controller.stub(:validate_token, @stub_claims) do
-        session[@nonce_session_key] = '123'
-        post :create, params: @token_params, format: :json
+        @controller.stub(:lookup_account_names_mapping, {}) do
+          session[@nonce_session_key] = '123'
+          post :create, params: @token_params, format: :json
 
-        assert session[@nonce_session_key] == nil
-        assert response.code == '302'
-        assert response.body.match?(/after-sign-in-path/)
+          assert session[@nonce_session_key] == nil
+          assert response.code == '302'
+          assert response.body.match?(/after-sign-in-path/)
+        end
       end
     end
 
-    test 'should respond with aredirect to the auth error page / code if the nonce does not match' do
+    test 'should respond with redirect to the auth error page / code if the nonce does not match' do
       @controller.stub(:validate_token, @stub_claims) do
         session[@nonce_session_key] = 'nonce-does-not-match'
         post :create, params: @token_params, format: :json
@@ -82,12 +86,12 @@ module PrxAuth::Rails
       @controller.stub(:id_claims, @stub_claims) do
         @controller.stub(:access_claims, @stub_claims.merge('sub' => '444')) do
 
-        session[@nonce_session_key] = '123'
-        post :create, params: @token_params, format: :json
+          session[@nonce_session_key] = '123'
+          post :create, params: @token_params, format: :json
 
-        assert response.code == '302'
-        assert response.body.match?(/error=verification_failed/)
-      end
+          assert response.code == '302'
+          assert response.body.match?(/error=verification_failed/)
+        end
       end
     end
 
