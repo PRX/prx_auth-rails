@@ -90,5 +90,11 @@ module PrxAuth::Rails
       end
       end
     end
+
+    test 'should clear the user token on sign out' do
+      session[PrxAuth::Rails::Controller::PRX_TOKEN_SESSION_KEY] = 'some-token'
+      post :destroy
+      assert session[PrxAuth::Rails::Controller::PRX_TOKEN_SESSION_KEY] == nil
+    end
   end
 end

@@ -27,6 +27,11 @@ module PrxAuth::Rails
     def show
     end
 
+    def destroy
+      sign_out_user
+      redirect_to after_sign_out_path
+    end
+
     def auth_error
       @auth_error_message = params.require(:error)
     end
@@ -53,6 +58,12 @@ module PrxAuth::Rails
     private
 
     def after_sign_in_path_for(_)
+      return super if defined?(super)
+
+      "/"
+    end
+
+    def after_sign_out_path
       return super if defined?(super)
 
       "/"
