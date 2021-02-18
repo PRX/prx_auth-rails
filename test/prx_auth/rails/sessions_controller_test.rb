@@ -32,9 +32,11 @@ module PrxAuth::Rails
 
     test 'create should validate a token and set the session variable' do
       @controller.stub(:validate_token, @stub_claims) do
-        session[@nonce_session_key] = '123'
-        post :create, params: @token_params, format: :json
-        assert session['prx.auth']['id_token']['nonce'] == '123'
+        @controller.stub(:lookup_and_register_accounts_names, nil) do
+          session[@nonce_session_key] = '123'
+          post :create, params: @token_params, format: :json
+          assert session['prx.auth']['id_token']['nonce'] == '123'
+        end
       end
     end
 
@@ -48,12 +50,14 @@ module PrxAuth::Rails
 
     test 'create should reset the nonce after consumed' do
       @controller.stub(:validate_token, @stub_claims) do
-        session[@nonce_session_key] = '123'
-        post :create, params: @token_params, format: :json
+        @controller.stub(:lookup_and_register_accounts_names, nil) do
+          session[@nonce_session_key] = '123'
+          post :create, params: @token_params, format: :json
 
-        assert session[@nonce_session_key] == nil
-        assert response.code == '302'
-        assert response.body.match?(/after-sign-in-path/)
+          assert session[@nonce_session_key] == nil
+          assert response.code == '302'
+          assert response.body.match?(/after-sign-in-path/)
+        end
       end
     end
 
