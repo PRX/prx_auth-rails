@@ -27,6 +27,11 @@ module PrxAuth::Rails
     def show
     end
 
+    def destroy
+      sign_out_user
+      redirect_to after_sign_out_path
+    end
+
     def auth_error
       @auth_error_message = params.require(:error)
     end
@@ -56,6 +61,12 @@ module PrxAuth::Rails
       return super if defined?(super)
 
       "/"
+    end
+
+    def after_sign_out_path
+      return super if defined?(super)
+
+      "https://#{id_host}/session/sign_out"
     end
 
     def id_claims
@@ -96,12 +107,15 @@ module PrxAuth::Rails
     end
 
     def validate_token(token)
-      id_host = PrxAuth::Rails.configuration.id_host
       prx_auth_cert = Rack::PrxAuth::Certificate.new("https://#{id_host}/api/v1/certs")
       auth_validator = Rack::PrxAuth::AuthValidator.new(token, prx_auth_cert, id_host)
       auth_validator.
         claims.
         with_indifferent_access
+    end
+
+    def id_host
+      PrxAuth::Rails.configuration.id_host
     end
   end
 end

@@ -61,7 +61,7 @@ module PrxAuth::Rails
       end
     end
 
-    test 'should respond with aredirect to the auth error page / code if the nonce does not match' do
+    test 'should respond with redirect to the auth error page / code if the nonce does not match' do
       @controller.stub(:validate_token, @stub_claims) do
         session[@nonce_session_key] = 'nonce-does-not-match'
         post :create, params: @token_params, format: :json
@@ -86,13 +86,19 @@ module PrxAuth::Rails
       @controller.stub(:id_claims, @stub_claims) do
         @controller.stub(:access_claims, @stub_claims.merge('sub' => '444')) do
 
-        session[@nonce_session_key] = '123'
-        post :create, params: @token_params, format: :json
+          session[@nonce_session_key] = '123'
+          post :create, params: @token_params, format: :json
 
-        assert response.code == '302'
-        assert response.body.match?(/error=verification_failed/)
+          assert response.code == '302'
+          assert response.body.match?(/error=verification_failed/)
+        end
       end
-      end
+    end
+
+    test 'should clear the user token on sign out' do
+      session[PrxAuth::Rails::Controller::PRX_TOKEN_SESSION_KEY] = 'some-token'
+      post :destroy
+      assert session[PrxAuth::Rails::Controller::PRX_TOKEN_SESSION_KEY] == nil
     end
   end
 end

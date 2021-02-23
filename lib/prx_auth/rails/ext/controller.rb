@@ -6,12 +6,13 @@ module PrxAuth
     module Controller
 
       PRX_ACCOUNT_NAME_MAPPING_KEY = 'prx.account.name.mapping'.freeze
+      PRX_TOKEN_SESSION_KEY = 'prx.auth'.freeze
 
       def prx_auth_token
         rack_auth_token = env_prx_auth_token
         return rack_auth_token if rack_auth_token.present?
 
-        session['prx.auth'] && Rack::PrxAuth::TokenData.new(session['prx.auth'])
+        session[PRX_TOKEN_SESSION_KEY] && Rack::PrxAuth::TokenData.new(session[PRX_TOKEN_SESSION_KEY])
       end
 
       def prx_authenticated?
@@ -53,7 +54,11 @@ module PrxAuth
       end
 
       def sign_in_user(token)
-        session['prx.auth'] = token
+        session[PRX_TOKEN_SESSION_KEY] = token
+      end
+
+      def sign_out_user
+        session.delete(PRX_TOKEN_SESSION_KEY)
       end
 
       private
