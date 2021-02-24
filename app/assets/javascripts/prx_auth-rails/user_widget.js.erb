@@ -12,7 +12,7 @@ function prxInjectScript(src, callback) {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-  const idHost = 'https://id.prx.docker';
+  const idHost = 'https://<%= PrxAuth::Rails.configuration.id_host %>';
   const scriptUrl = idHost + '/widget.js';
 
   prxInjectScript(scriptUrl, function () {
