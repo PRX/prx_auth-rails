@@ -12,7 +12,7 @@ function prxInjectScript(src, callback) {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-  const idHost = 'https://id.prx.org';
+  const idHost = 'https://id.prx.docker';
   const scriptUrl = idHost + '/widget.js';
 
   prxInjectScript(scriptUrl, function () {
@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', function () {
         // Logged in
         widget.classList.add('user-info');
 
-        // const account = document.getElementById('prx-user-widget-menu-account');
+        const account = document.getElementById('prx-user-widget-menu-account');
         account.innerText = prx.userinfo.email;
 
         signIn.listApps('prx-user-widget-menu-apps');
