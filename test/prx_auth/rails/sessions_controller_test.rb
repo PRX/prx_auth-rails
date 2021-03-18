@@ -33,7 +33,7 @@ module PrxAuth::Rails
     test 'create should validate a token and set the session variable' do
       session[SessionsController::PRX_JWT_SESSION_KEY] = nil
       @controller.stub(:validate_token, @stub_claims) do
-        @controller.stub(:lookup_and_register_accounts_names, nil) do
+        @controller.stub(:fetch_accounts, []) do
           session[@nonce_session_key] = '123'
           post :create, params: @token_params, format: :json
           assert session[SessionsController::PRX_JWT_SESSION_KEY] == 'accesstok'
@@ -51,7 +51,7 @@ module PrxAuth::Rails
 
     test 'create should reset the nonce after consumed' do
       @controller.stub(:validate_token, @stub_claims) do
-        @controller.stub(:lookup_and_register_accounts_names, nil) do
+        @controller.stub(:fetch_accounts, []) do
           session[@nonce_session_key] = '123'
           post :create, params: @token_params, format: :json
 

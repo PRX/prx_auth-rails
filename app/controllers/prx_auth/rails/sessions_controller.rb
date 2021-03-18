@@ -38,7 +38,6 @@ module PrxAuth::Rails
       if valid_nonce? && users_match?
         clear_nonce!
         sign_in_user(access_token)
-        lookup_and_register_accounts_names
         redirect_to after_sign_in_path_for(current_user)
       else
         clear_nonce!
