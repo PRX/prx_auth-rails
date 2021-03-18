@@ -32,11 +32,10 @@ module PrxAuth
       end
 
       def sign_out_user
-        session.delete(PRX_JWT_SESSION_KEY)
-        session.delete(PRX_ACCOUNT_MAPPING_SESSION_KEY)
+        reset_session
       end
 
-      def account_name_for(id)
+      def account_name_for(account_id)
         account_for(account_id)[:name]
       end
 
