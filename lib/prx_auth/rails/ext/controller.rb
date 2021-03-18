@@ -4,15 +4,12 @@ require 'open-uri'
 module PrxAuth
   module Rails
     module Controller
-
+      PRX_AUTH_ENV_KEY = 'prx.auth'.freeze
+      PRX_JWT_SESSION_KEY = 'prx.auth'.freeze
       PRX_ACCOUNT_NAME_MAPPING_KEY = 'prx.account.name.mapping'.freeze
-      PRX_TOKEN_SESSION_KEY = 'prx.auth'.freeze
 
       def prx_auth_token
-        rack_auth_token = env_prx_auth_token
-        return rack_auth_token if rack_auth_token.present?
-
-        session[PRX_TOKEN_SESSION_KEY] && Rack::PrxAuth::TokenData.new(session[PRX_TOKEN_SESSION_KEY])
+        env_token || session_token
       end
 
       def prx_authenticated?
@@ -26,9 +23,7 @@ module PrxAuth
       end
 
       def current_user
-        return if prx_auth_token.nil?
-
-        PrxAuth::Rails::Token.new(prx_auth_token)
+        prx_auth_token
       end
 
       def lookup_and_register_accounts_names
@@ -54,11 +49,11 @@ module PrxAuth
       end
 
       def sign_in_user(token)
-        session[PRX_TOKEN_SESSION_KEY] = token
+        session[PRX_JWT_SESSION_KEY] = token
       end
 
       def sign_out_user
-        session.delete(PRX_TOKEN_SESSION_KEY)
+        session.delete(PRX_JWT_SESSION_KEY)
       end
 
       private
@@ -84,11 +79,22 @@ module PrxAuth
         mapping
       end
 
-      def env_prx_auth_token
-        if !defined? @_prx_auth_token
-          @_prx_auth_token = request.env['prx.auth'] && PrxAuth::Rails::Token.new(request.env['prx.auth'])
-        else
-          @_prx_auth_token
+      # token from data set by prx_auth rack middleware
+      def env_token
+        @env_token_data ||= if request.env[PRX_AUTH_ENV_KEY]
+          token_data = request.env[PRX_AUTH_ENV_KEY]
+          PrxAuth::Rails::Token.new(token_data)
+        end
+      end
+
+      # token from jwt stored in session
+      def session_token
+        @session_prx_auth_token ||= if session[PRX_JWT_SESSION_KEY]
+          jwt = session[PRX_JWT_SESSION_KEY]
+          # NOTE: we already validated this jwt - so just decode it
+          claims = Rack::PrxAuth::AuthValidator.new(jwt, nil, nil).claims
+          token_data = Rack::PrxAuth::TokenData.new(claims)
+          PrxAuth::Rails::Token.new(token_data)
         end
       end
     end

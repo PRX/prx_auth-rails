@@ -6,7 +6,7 @@ module PrxAuth::Rails
     setup do
       @routes = PrxAuth::Rails::Engine.routes
       @nonce_session_key = SessionsController::ID_NONCE_SESSION_KEY
-      @token_params = {id_token: 'sometok', access_token: 'othertok'}
+      @token_params = {id_token: 'idtok', access_token: 'accesstok'}
       @stub_claims = {'nonce' => '123', 'sub' => '1'}
     end
 
@@ -31,11 +31,12 @@ module PrxAuth::Rails
     end
 
     test 'create should validate a token and set the session variable' do
+      session[SessionsController::PRX_JWT_SESSION_KEY] = nil
       @controller.stub(:validate_token, @stub_claims) do
         @controller.stub(:lookup_and_register_accounts_names, nil) do
           session[@nonce_session_key] = '123'
           post :create, params: @token_params, format: :json
-          assert session['prx.auth']['id_token']['nonce'] == '123'
+          assert session[SessionsController::PRX_JWT_SESSION_KEY] == 'accesstok'
         end
       end
     end
@@ -96,9 +97,9 @@ module PrxAuth::Rails
     end
 
     test 'should clear the user token on sign out' do
-      session[PrxAuth::Rails::Controller::PRX_TOKEN_SESSION_KEY] = 'some-token'
+      session[SessionsController::PRX_JWT_SESSION_KEY] = 'some-token'
       post :destroy
-      assert session[PrxAuth::Rails::Controller::PRX_TOKEN_SESSION_KEY] == nil
+      assert session[SessionsController::PRX_JWT_SESSION_KEY] == nil
     end
   end
 end
