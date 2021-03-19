@@ -8,8 +8,9 @@ module PrxAuth
 
       PRX_AUTH_ENV_KEY = 'prx.auth'.freeze
       PRX_JWT_SESSION_KEY = 'prx.auth.jwt'.freeze
+      PRX_JWT_REFRESH_TTL = 300.freeze
       PRX_ACCOUNT_MAPPING_SESSION_KEY = 'prx.auth.account.mapping'.freeze
-      PRX_REFRESH_BACK_KEY = 'prx.auth.back'
+      PRX_REFRESH_BACK_KEY = 'prx.auth.back'.freeze
 
       def prx_auth_token
         env_token || session_token
@@ -100,10 +101,12 @@ module PrxAuth
           jwt = session[PRX_JWT_SESSION_KEY]
 
           # NOTE: we already validated this jwt - so just decode it
-          validator = Rack::PrxAuth::AuthValidator.new(jwt, nil, nil)
+          validator = Rack::PrxAuth::AuthValidator.new(jwt)
 
-          # if jwt expired AND THIS IS A GET REQUEST, refresh auth session
-          raise SessionTokenExpiredError.new if validator.expired? && request.get?
+          # try to refresh auth session on GET requests
+          if request.get? && validator.time_to_live < PRX_JWT_REFRESH_TTL
+            raise SessionTokenExpiredError.new
+          end
 
           # create new data/token from access claims
           token_data = Rack::PrxAuth::TokenData.new(validator.claims)
