@@ -48,9 +48,14 @@ module PrxAuth::Rails
     private
 
     def after_sign_in_path_for(_)
-      return super if defined?(super)
-
-      "/"
+      back_path = after_sign_in_user_redirect
+      if back_path.present?
+        back_path
+      elsif defined?(super)
+        super
+      else
+        '/'
+      end
     end
 
     def after_sign_out_path

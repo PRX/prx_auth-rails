@@ -4,12 +4,19 @@ require 'open-uri'
 module PrxAuth
   module Rails
     module Controller
+      class SessionTokenExpiredError < RuntimeError; end
+
       PRX_AUTH_ENV_KEY = 'prx.auth'.freeze
       PRX_JWT_SESSION_KEY = 'prx.auth.jwt'.freeze
       PRX_ACCOUNT_MAPPING_SESSION_KEY = 'prx.auth.account.mapping'.freeze
+      PRX_REFRESH_BACK_KEY = 'prx.auth.back'
 
       def prx_auth_token
         env_token || session_token
+      rescue SessionTokenExpiredError
+        reset_session
+        session[PRX_REFRESH_BACK_KEY] = request.fullpath
+        redirect_to PrxAuth::Rails::Engine.routes.url_helpers.new_sessions_path
       end
 
       def prx_authenticated?
@@ -29,6 +36,10 @@ module PrxAuth
       def sign_in_user(token)
         session[PRX_JWT_SESSION_KEY] = token
         accounts_for(current_user.resources)
+      end
+
+      def after_sign_in_user_redirect
+        session.delete(PRX_REFRESH_BACK_KEY)
       end
 
       def sign_out_user
@@ -87,9 +98,15 @@ module PrxAuth
       def session_token
         @session_prx_auth_token ||= if session[PRX_JWT_SESSION_KEY]
           jwt = session[PRX_JWT_SESSION_KEY]
+
           # NOTE: we already validated this jwt - so just decode it
-          claims = Rack::PrxAuth::AuthValidator.new(jwt, nil, nil).claims
-          token_data = Rack::PrxAuth::TokenData.new(claims)
+          validator = Rack::PrxAuth::AuthValidator.new(jwt, nil, nil)
+
+          # if jwt expired AND THIS IS A GET REQUEST, refresh auth session
+          raise SessionTokenExpiredError.new if validator.expired? && request.get?
+
+          # create new data/token from access claims
+          token_data = Rack::PrxAuth::TokenData.new(validator.claims)
           PrxAuth::Rails::Token.new(token_data)
         end
       end
