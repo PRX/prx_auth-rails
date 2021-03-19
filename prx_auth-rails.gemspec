@@ -8,10 +8,8 @@ Gem::Specification.new do |spec|
   spec.version       = PrxAuth::Rails::VERSION
   spec.authors       = ["Chris Rhoden"]
   spec.email         = ["carhoden@gmail.com"]
-  spec.description   = %q{Rails integration for next generation PRX Authorization system.
-}
-  spec.summary       = %q{Rails integration for next generation PRX Authorization system.
-}
+  spec.description   = "Rails integration for next generation PRX Authorization system."
+  spec.summary       = "Rails integration for next generation PRX Authorization system."
   spec.homepage      = "https://github.com/PRX/prx_auth-rails"
   spec.license       = "MIT"
 
@@ -33,7 +31,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'pry'
   spec.add_development_dependency 'sqlite3'
 
-
-
-  spec.add_runtime_dependency 'prx_auth', "~> 1.2"
+  spec.add_runtime_dependency 'prx_auth', ">= 1.7.0"
 end
