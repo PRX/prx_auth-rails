@@ -20,6 +20,10 @@ module PrxAuth
         redirect_to PrxAuth::Rails::Engine.routes.url_helpers.new_sessions_path
       end
 
+      def prx_jwt
+        session[PRX_JWT_SESSION_KEY]
+      end
+
       def prx_authenticated?
         !!prx_auth_token
       end
@@ -97,11 +101,9 @@ module PrxAuth
 
       # token from jwt stored in session
       def session_token
-        @session_prx_auth_token ||= if session[PRX_JWT_SESSION_KEY]
-          jwt = session[PRX_JWT_SESSION_KEY]
-
+        @session_prx_auth_token ||= if prx_jwt
           # NOTE: we already validated this jwt - so just decode it
-          validator = Rack::PrxAuth::AuthValidator.new(jwt)
+          validator = Rack::PrxAuth::AuthValidator.new(prx_jwt)
 
           # try to refresh auth session on GET requests
           if request.get? && validator.time_to_live < PRX_JWT_REFRESH_TTL
