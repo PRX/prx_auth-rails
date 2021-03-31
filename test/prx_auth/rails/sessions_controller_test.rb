@@ -6,8 +6,10 @@ module PrxAuth::Rails
     setup do
       @routes = PrxAuth::Rails::Engine.routes
       @nonce_session_key = SessionsController::ID_NONCE_SESSION_KEY
-      @token_params = {id_token: 'sometok', access_token: 'othertok'}
+      @refresh_back_key = SessionsController::PRX_REFRESH_BACK_KEY
+      @token_params = {id_token: 'idtok', access_token: 'accesstok'}
       @stub_claims = {'nonce' => '123', 'sub' => '1'}
+      @stub_token = PrxAuth::Rails::Token.new(Rack::PrxAuth::TokenData.new())
     end
 
     test "new creates nonce" do
@@ -31,11 +33,12 @@ module PrxAuth::Rails
     end
 
     test 'create should validate a token and set the session variable' do
+      session[SessionsController::PRX_JWT_SESSION_KEY] = nil
       @controller.stub(:validate_token, @stub_claims) do
-        @controller.stub(:lookup_and_register_accounts_names, nil) do
+        @controller.stub(:session_token, @stub_token) do
           session[@nonce_session_key] = '123'
           post :create, params: @token_params, format: :json
-          assert session['prx.auth']['id_token']['nonce'] == '123'
+          assert session[SessionsController::PRX_JWT_SESSION_KEY] == 'accesstok'
         end
       end
     end
@@ -50,13 +53,27 @@ module PrxAuth::Rails
 
     test 'create should reset the nonce after consumed' do
       @controller.stub(:validate_token, @stub_claims) do
-        @controller.stub(:lookup_and_register_accounts_names, nil) do
+        @controller.stub(:session_token, @stub_token) do
           session[@nonce_session_key] = '123'
           post :create, params: @token_params, format: :json
 
           assert session[@nonce_session_key] == nil
           assert response.code == '302'
           assert response.body.match?(/after-sign-in-path/)
+        end
+      end
+    end
+
+    test 'redirects to a back-path after refresh' do
+      @controller.stub(:validate_token, @stub_claims) do
+        @controller.stub(:session_token, @stub_token) do
+          session[@nonce_session_key] = '123'
+          session[@refresh_back_key] = '/lets/go/here?okay'
+          post :create, params: @token_params, format: :json
+
+          assert session[@refresh_back_key] == nil
+          assert response.code == '302'
+          assert response.headers['Location'].ends_with?('/lets/go/here?okay')
         end
       end
     end
@@ -96,9 +113,9 @@ module PrxAuth::Rails
     end
 
     test 'should clear the user token on sign out' do
-      session[PrxAuth::Rails::Controller::PRX_TOKEN_SESSION_KEY] = 'some-token'
+      session[SessionsController::PRX_JWT_SESSION_KEY] = 'some-token'
       post :destroy
-      assert session[PrxAuth::Rails::Controller::PRX_TOKEN_SESSION_KEY] == nil
+      assert session[SessionsController::PRX_JWT_SESSION_KEY] == nil
     end
   end
 end
