@@ -79,7 +79,7 @@ module PrxAuth
       end
 
       def account_name_for(account_id)
-        account_for(account_id)[:name]
+        account_for(account_id).try(:[], :name)
       end
 
       def account_for(account_id)
