@@ -16,7 +16,9 @@ module PrxAuth
       def prx_auth_token
         env_token || session_token
       rescue SessionTokenExpiredError
-        reset_session
+        session.delete(PRX_JWT_SESSION_KEY)
+        session.delete(PRX_ACCOUNT_MAPPING_SESSION_KEY)
+        session.delete(PRX_USER_INFO_SESSION_KEY)
         session[PRX_REFRESH_BACK_KEY] = request.fullpath
         redirect_to PrxAuth::Rails::Engine.routes.url_helpers.new_sessions_path
       end
