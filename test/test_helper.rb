@@ -5,6 +5,7 @@ Coveralls.wear!
 require 'minitest/autorun'
 require 'minitest/spec'
 require 'minitest/pride'
+require 'webmock/minitest'
 require 'action_pack'
 require 'action_controller'
 require 'action_view'

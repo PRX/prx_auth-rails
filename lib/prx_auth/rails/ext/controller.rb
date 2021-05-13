@@ -10,12 +10,15 @@ module PrxAuth
       PRX_JWT_SESSION_KEY = 'prx.auth.jwt'.freeze
       PRX_JWT_REFRESH_TTL = 300.freeze
       PRX_ACCOUNT_MAPPING_SESSION_KEY = 'prx.auth.account.mapping'.freeze
+      PRX_USER_INFO_SESSION_KEY = 'prx.auth.info'.freeze
       PRX_REFRESH_BACK_KEY = 'prx.auth.back'.freeze
 
       def prx_auth_token
         env_token || session_token
       rescue SessionTokenExpiredError
-        reset_session
+        session.delete(PRX_JWT_SESSION_KEY)
+        session.delete(PRX_ACCOUNT_MAPPING_SESSION_KEY)
+        session.delete(PRX_USER_INFO_SESSION_KEY)
         session[PRX_REFRESH_BACK_KEY] = request.fullpath
         redirect_to PrxAuth::Rails::Engine.routes.url_helpers.new_sessions_path
       end
@@ -34,8 +37,34 @@ module PrxAuth
         redirect_to PrxAuth::Rails::Engine.routes.url_helpers.new_sessions_path
       end
 
+      def prx_auth_needs_refresh?(jwt_ttl)
+        request.get? && jwt_ttl < PRX_JWT_REFRESH_TTL
+      end
+
       def current_user
         prx_auth_token
+      end
+
+      def current_user_info
+        session[PRX_USER_INFO_SESSION_KEY] ||= fetch_userinfo
+      end
+
+      def current_user_name
+        current_user_info['name'] || current_user_info['preferred_username'] || current_user_info['email']
+      end
+
+      def current_user_apps
+        apps = (current_user_info.try(:[], 'apps') || []).map do |name, url|
+          label = name.sub(/^https?:\/\//, '').sub(/\..+/, '').capitalize
+          ["PRX #{label}", url]
+        end
+
+        # only return entire list in development
+        if ::Rails.env.production? || ::Rails.env.staging?
+          apps.to_h.select { |k, v| v.match?(/\.(org|tech)/) }
+        else
+          apps.to_h
+        end
       end
 
       def sign_in_user(token)
@@ -52,7 +81,7 @@ module PrxAuth
       end
 
       def account_name_for(account_id)
-        account_for(account_id)[:name]
+        account_for(account_id).try(:[], :name)
       end
 
       def account_for(account_id)
@@ -80,15 +109,20 @@ module PrxAuth
       end
 
       def fetch_accounts(ids)
-        id_host = PrxAuth::Rails.configuration.id_host
         ids_param = ids.map(&:to_s).join(',')
+        fetch("/api/v1/accounts?account_ids=#{ids_param}")['accounts']
+      end
 
+      def fetch_userinfo
+        fetch("/userinfo?scope=apps+email+profile", prx_jwt)
+      end
+
+      def fetch(path, token = nil)
+        url = "https://#{PrxAuth::Rails.configuration.id_host}#{path}"
         options = {}
         options[:ssl_verify_mode] = OpenSSL::SSL::VERIFY_NONE if ::Rails.env.development?
-
-        accounts = URI.open("https://#{id_host}/api/v1/accounts?account_ids=#{ids_param}", options).read
-
-        JSON.parse(accounts)['accounts']
+        options['Authorization'] = "Bearer #{token}" if token
+        JSON.parse(URI.open(url, options).read)
       end
 
       # token from data set by prx_auth rack middleware
@@ -105,8 +139,8 @@ module PrxAuth
           # NOTE: we already validated this jwt - so just decode it
           validator = Rack::PrxAuth::AuthValidator.new(prx_jwt)
 
-          # try to refresh auth session on GET requests
-          if request.get? && validator.time_to_live < PRX_JWT_REFRESH_TTL
+          # does this jwt need to be refreshed?
+          if prx_auth_needs_refresh?(validator.time_to_live)
             raise SessionTokenExpiredError.new
           end
 
