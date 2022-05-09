@@ -23,7 +23,7 @@ module PrxAuth
           session.delete(PRX_JWT_SESSION_KEY)
           session.delete(PRX_ACCOUNT_MAPPING_SESSION_KEY)
           session.delete(PRX_USER_INFO_SESSION_KEY)
-          redirect_to PrxAuth::Rails::Engine.routes.url_helpers.new_sessions_path
+          nil
         end
       end
 
