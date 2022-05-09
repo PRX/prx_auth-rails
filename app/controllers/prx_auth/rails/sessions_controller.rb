@@ -7,6 +7,7 @@ module PrxAuth::Rails
     skip_before_action :authenticate!
 
     before_action :set_nonce!, only: [:new, :show]
+    before_action :set_after_sign_in_path
 
     ID_NONCE_SESSION_KEY = 'id_prx_openid_nonce'
 
