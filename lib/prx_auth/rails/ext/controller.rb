@@ -15,16 +15,12 @@ module PrxAuth
       PRX_REFRESH_BACK_KEY = 'prx.auth.back'.freeze
 
       def prx_auth_token
-        set_after_sign_in_path
-
-        begin
-          env_token || session_token
-        rescue SessionTokenExpiredError
-          session.delete(PRX_JWT_SESSION_KEY)
-          session.delete(PRX_ACCOUNT_MAPPING_SESSION_KEY)
-          session.delete(PRX_USER_INFO_SESSION_KEY)
-          nil
-        end
+        env_token || session_token
+      rescue SessionTokenExpiredError
+        session.delete(PRX_JWT_SESSION_KEY)
+        session.delete(PRX_ACCOUNT_MAPPING_SESSION_KEY)
+        session.delete(PRX_USER_INFO_SESSION_KEY)
+        nil
       end
 
       def set_after_sign_in_path
