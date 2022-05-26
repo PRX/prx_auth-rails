@@ -8,6 +8,7 @@ module PrxAuth
 
       PRX_AUTH_ENV_KEY = 'prx.auth'.freeze
       PRX_JWT_SESSION_KEY = 'prx.auth.jwt'.freeze
+      # subtracted from the JWT ttl
       PRX_JWT_REFRESH_TTL = 300.freeze
       PRX_ACCOUNT_MAPPING_SESSION_KEY = 'prx.auth.account.mapping'.freeze
       PRX_USER_INFO_SESSION_KEY = 'prx.auth.info'.freeze
@@ -19,8 +20,13 @@ module PrxAuth
         session.delete(PRX_JWT_SESSION_KEY)
         session.delete(PRX_ACCOUNT_MAPPING_SESSION_KEY)
         session.delete(PRX_USER_INFO_SESSION_KEY)
+        nil
+      end
+
+      def set_after_sign_in_path
+        return if self.class == PrxAuth::Rails::SessionsController
+
         session[PRX_REFRESH_BACK_KEY] = request.fullpath
-        redirect_to PrxAuth::Rails::Engine.routes.url_helpers.new_sessions_path
       end
 
       def prx_jwt
@@ -73,7 +79,7 @@ module PrxAuth
       end
 
       def after_sign_in_user_redirect
-        session.delete(PRX_REFRESH_BACK_KEY)
+        session[PRX_REFRESH_BACK_KEY]
       end
 
       def sign_out_user

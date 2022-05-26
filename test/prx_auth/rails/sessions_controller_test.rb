@@ -71,7 +71,9 @@ module PrxAuth::Rails
           session[@refresh_back_key] = '/lets/go/here?okay'
           post :create, params: @token_params, format: :json
 
-          assert session[@refresh_back_key] == nil
+          # A trailing log of the 'last' page
+          assert session[@refresh_back_key] == '/lets/go/here?okay'
+
           assert response.code == '302'
           assert response.headers['Location'].ends_with?('/lets/go/here?okay')
         end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module PrxAuth::Rails
   class SessionsController < ApplicationController
     include PrxAuth::Rails::Engine.routes.url_helpers
@@ -5,8 +7,9 @@ module PrxAuth::Rails
     skip_before_action :authenticate!
 
     before_action :set_nonce!, only: [:new, :show]
+    before_action :set_after_sign_in_path
 
-    ID_NONCE_SESSION_KEY = 'id_prx_openid_nonce'.freeze
+    ID_NONCE_SESSION_KEY = 'id_prx_openid_nonce'
 
     def new
       config = PrxAuth::Rails.configuration
