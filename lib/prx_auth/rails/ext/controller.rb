@@ -116,7 +116,8 @@ module PrxAuth
 
       def fetch_accounts(ids)
         ids_param = ids.map(&:to_s).join(',')
-        fetch("/api/v1/accounts?account_ids=#{ids_param}")['accounts']
+        resp = fetch("/api/v1/accounts?account_ids=#{ids_param}")
+        resp.try(:[], '_embedded').try(:[], 'prx:items') || []
       end
 
       def fetch_userinfo
