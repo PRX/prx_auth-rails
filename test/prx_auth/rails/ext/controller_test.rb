@@ -115,7 +115,7 @@ module PrxAuth::Rails::Ext
       with_stubbed_auth('some-jwt') do
         one = {'id' => 1, 'type' => 'IndividualAccount', 'name' => 'One'}
         three = {'id' => 3, 'type' => 'GroupAccount', 'name' => 'Three'}
-        body = {'accounts' => [one, three]}
+        body = {'_embedded' => {'prx:items' => [one, three]}}
 
         id_host = PrxAuth::Rails.configuration.id_host
         stub_request(:get, "https://#{id_host}/api/v1/accounts?account_ids=1,2,3").
@@ -135,7 +135,7 @@ module PrxAuth::Rails::Ext
       with_stubbed_auth('some-jwt') do
         id_host = PrxAuth::Rails.configuration.id_host
         stub_request(:get, "https://#{id_host}/api/v1/accounts?account_ids=2").
-          to_return(status: 200, body: JSON.generate({accounts: []})).
+          to_return(status: 200, body: JSON.generate({'_embedded' => {'prx:items' => []}})).
           times(3)
 
         assert_equal @controller.accounts_for([2]), [nil]
@@ -150,7 +150,7 @@ module PrxAuth::Rails::Ext
         two = {'id' => 2, 'type' => 'StationAccount', 'name' => 'Two'}
         three = {'name' => 'Three'}
         session[@account_mapping_key] = {1 => one, 3 => three}
-        body = {'accounts' => [two]}
+        body = {'_embedded' => {'prx:items' => [two]}}
 
         id_host = PrxAuth::Rails.configuration.id_host
         stub_request(:get, "https://#{id_host}/api/v1/accounts?account_ids=2").
