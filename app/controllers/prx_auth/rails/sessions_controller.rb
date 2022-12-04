@@ -4,7 +4,7 @@ module PrxAuth::Rails
   class SessionsController < ApplicationController
     include PrxAuth::Rails::Engine.routes.url_helpers
 
-    skip_before_action :authenticate!
+    skip_before_action :authenticate!, raise: false
 
     before_action :set_nonce!, only: [:new, :show]
     before_action :set_after_sign_in_path
