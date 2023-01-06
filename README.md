@@ -46,7 +46,10 @@ In your rails app, add a file to config/initializers called
 PrxAuth::Rails.configure do |config|
 
   # enables automatic installation of token parser middleware
-  config.install_middleware = false # default: true
+  config.install_middleware = true # default: true
+
+  # set the ID host
+  config.id_host = 'id.staging.prx.tech' # default: id.prx.org
 
   # automatically adds namespace to all scoped queries, e.g. .authorized?(:foo) will be treated
   # as .authorized?(:my_great_ns, :foo). Has no impact on unscoped queries.
