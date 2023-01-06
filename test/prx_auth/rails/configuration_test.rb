@@ -4,33 +4,32 @@ describe PrxAuth::Rails::Configuration do
 
   subject { PrxAuth::Rails::Configuration.new }
 
-  it 'initializes with a namespace defined by rails app name' do
-    assert subject.namespace == :dummy
+  it 'initializes with defaults' do
+    assert subject.install_middleware
+    assert_nil subject.prx_client_id
+    assert_equal 'id.prx.org', subject.id_host
+    assert_equal 'api/v1/certs', subject.cert_path
   end
 
-  it 'can be reconfigured using the namespace attr' do
-    PrxAuth::Rails.stub(:configuration, subject) do
-      PrxAuth::Rails.configure do |config|
-        config.namespace = :new_test
-      end
-
-      assert PrxAuth::Rails.configuration.namespace == :new_test
-    end
+  it 'infers the default namespace from the rails app name' do
+    assert_equal :dummy, subject.namespace
   end
 
-  it 'defaults to enabling the middleware' do
-    PrxAuth::Rails.stub(:configuration, subject) do
-      assert PrxAuth::Rails.configuration.install_middleware
-    end
-  end
-
-  it 'allows overriding of the middleware automatic installation' do
+  it 'is updated by the prxauth configure block' do
     PrxAuth::Rails.stub(:configuration, subject) do
       PrxAuth::Rails.configure do |config|
         config.install_middleware = false
+        config.prx_client_id = 'some-id'
+        config.id_host = 'id.prx.blah'
+        config.cert_path = 'cert/path'
+        config.namespace = :new_test
       end
-
-      assert !PrxAuth::Rails.configuration.install_middleware
     end
+
+    refute subject.install_middleware
+    assert_equal 'some-id', subject.prx_client_id
+    assert_equal 'id.prx.blah', subject.id_host
+    assert_equal 'cert/path', subject.cert_path
+    assert_equal :new_test, subject.namespace
   end
 end
