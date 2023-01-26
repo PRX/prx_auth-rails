@@ -52,7 +52,10 @@ module PrxAuth
       end
 
       def current_user_info
-        session[PRX_USER_INFO_SESSION_KEY] ||= fetch_userinfo
+        session[PRX_USER_INFO_SESSION_KEY] ||= begin
+          info = fetch_userinfo
+          info.slice('name', 'preferred_username', 'email', 'image_href', 'apps')
+        end
       end
 
       def current_user_name
@@ -87,7 +90,7 @@ module PrxAuth
       end
 
       def account_name_for(account_id)
-        account_for(account_id).try(:[], :name)
+        account_for(account_id).try(:[], 'name')
       end
 
       def account_for(account_id)
@@ -107,7 +110,8 @@ module PrxAuth
         missing = ids - session[PRX_ACCOUNT_MAPPING_SESSION_KEY].keys
         if missing.present?
           fetch_accounts(missing).each do |account|
-            session[PRX_ACCOUNT_MAPPING_SESSION_KEY][account['id']] = account.with_indifferent_access
+            minimal = account.slice('name', 'type')
+            session[PRX_ACCOUNT_MAPPING_SESSION_KEY][account['id']] = minimal
           end
         end
 
