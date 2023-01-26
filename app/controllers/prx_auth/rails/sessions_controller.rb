@@ -10,19 +10,29 @@ module PrxAuth::Rails
     before_action :set_after_sign_in_path
 
     ID_NONCE_SESSION_KEY = 'id_prx_openid_nonce'
+    DEFAULT_SCOPES = 'openid apps'
 
     def new
       config = PrxAuth::Rails.configuration
+
+      scope =
+        if config.prx_scope.present?
+          "#{DEFAULT_SCOPES} #{config.prx_scope}"
+        else
+          DEFAULT_SCOPES
+        end
 
       id_auth_params = {
         client_id: config.prx_client_id,
         nonce: fetch_nonce,
         response_type: 'id_token token',
-        scope: 'openid apps',
+        scope: scope,
         prompt: 'necessary'
       }
 
-      redirect_to '//' + config.id_host + '/authorize?' + id_auth_params.to_query
+      url = '//' + config.id_host + '/authorize?' + id_auth_params.to_query
+
+      redirect_to url, allow_other_host: true
     end
 
     def show
@@ -44,7 +54,7 @@ module PrxAuth::Rails
         redirect_to after_sign_in_path_for(current_user)
       else
         clear_nonce!
-        redirect_to auth_error_sessions_path(error: 'verification_failed')
+        redirect_to auth_error_sessions_path(error: params[:error] || 'unknown_error')
       end
     end
 

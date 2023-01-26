@@ -2,6 +2,7 @@
   <%= form_for(:sessions, :url => PrxAuth::Rails::Engine.routes.url_helpers.sessions_path) do |f| %>
       <%= hidden_field_tag :access_token, '', id: 'access-token-field' %>
       <%= hidden_field_tag :id_token, '', id: 'id-token-field' %>
+      <%= hidden_field_tag :error, '', id: 'error-field' %>
       <%= f.submit id: 'sessions-form-submit' %>
   <% end %>
 </div>
@@ -23,14 +24,16 @@
   }
 
 window.addEventListener("load", () => {
-  var idToken = document.querySelector("#id-token-field");
   var accessToken = document.querySelector("#access-token-field");
+  var idToken = document.querySelector("#id-token-field");
+  var error = document.querySelector("#error-field");
   var submit = document.querySelector("input#sessions-form-submit[type=submit]");
 
   var hashParams = parseURLFragment();
 
   accessToken.value = hashParams['access_token'];
   idToken.value = hashParams['id_token'];
+  error.value = hashParams['error'];
 
   submit.click();
 });

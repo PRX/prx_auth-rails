@@ -2,6 +2,7 @@ class PrxAuth::Rails::Configuration
   attr_accessor :install_middleware,
                 :namespace,
                 :prx_client_id,
+                :prx_scope,
                 :id_host,
                 :cert_path
 
@@ -11,6 +12,7 @@ class PrxAuth::Rails::Configuration
   def initialize
     @install_middleware = true
     @prx_client_id = nil
+    @prx_scope = nil
     @id_host = DEFAULT_ID_HOST
     @cert_path = DEFAULT_CERT_PATH
 

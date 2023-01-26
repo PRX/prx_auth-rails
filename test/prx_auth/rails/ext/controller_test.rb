@@ -71,7 +71,7 @@ module PrxAuth::Rails::Ext
           to_return(status: 200, body: JSON.generate(body))
 
         assert session[@user_info_key] == nil
-        assert_equal @controller.current_user_info, body
+        assert_equal @controller.current_user_info, body.slice('name', 'apps')
         refute session[@user_info_key] == nil
         assert_equal @controller.current_user_name, 'Some Username'
         assert_equal @controller.current_user_apps, {'PRX Publish' => 'https://publish.prx.test'}
@@ -117,15 +117,18 @@ module PrxAuth::Rails::Ext
         three = {'id' => 3, 'type' => 'GroupAccount', 'name' => 'Three'}
         body = {'_embedded' => {'prx:items' => [one, three]}}
 
+        min_one = one.slice('name', 'type')
+        min_three = three.slice('name', 'type')
+
         id_host = PrxAuth::Rails.configuration.id_host
         stub_request(:get, "https://#{id_host}/api/v1/accounts?account_ids=1,2,3").
           to_return(status: 200, body: JSON.generate(body))
 
         assert_nil session[@account_mapping_key]
-        assert_equal @controller.accounts_for([1, 2, 3]), [one, nil, three]
+        assert_equal @controller.accounts_for([1, 2, 3]), [min_one, nil, min_three]
         refute_nil session[@account_mapping_key]
-        assert_equal @controller.account_for(1), one
-        assert_equal @controller.account_for(3), three
+        assert_equal @controller.account_for(1), min_one
+        assert_equal @controller.account_for(3), min_three
         assert_equal @controller.account_name_for(1), 'One'
         assert_equal @controller.account_name_for(3), 'Three'
       end
@@ -152,12 +155,16 @@ module PrxAuth::Rails::Ext
         session[@account_mapping_key] = {1 => one, 3 => three}
         body = {'_embedded' => {'prx:items' => [two]}}
 
+        min_one = one.slice('name', 'type')
+        min_two = two.slice('name', 'type')
+        min_three = three.slice('name', 'type')
+
         id_host = PrxAuth::Rails.configuration.id_host
         stub_request(:get, "https://#{id_host}/api/v1/accounts?account_ids=2").
           to_return(status: 200, body: JSON.generate(body))
 
-        assert_equal @controller.accounts_for([1, 2, 3]), [one, two, three]
-        assert_equal @controller.account_for(2), two
+        assert_equal @controller.accounts_for([1, 2, 3]), [min_one, min_two, min_three]
+        assert_equal @controller.account_for(2), min_two
         assert_equal @controller.account_name_for(2), 'Two'
       end
     end

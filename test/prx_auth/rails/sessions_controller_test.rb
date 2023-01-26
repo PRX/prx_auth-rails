@@ -82,6 +82,7 @@ module PrxAuth::Rails
 
     test 'should respond with redirect to the auth error page / code if the nonce does not match' do
       @controller.stub(:validate_token, @stub_claims) do
+        @token_params[:error] = 'verification_failed'
         session[@nonce_session_key] = 'nonce-does-not-match'
         post :create, params: @token_params, format: :json
         assert response.code == '302'
@@ -105,6 +106,7 @@ module PrxAuth::Rails
       @controller.stub(:id_claims, @stub_claims) do
         @controller.stub(:access_claims, @stub_claims.merge('sub' => '444')) do
 
+          @token_params[:error] = 'verification_failed'
           session[@nonce_session_key] = '123'
           post :create, params: @token_params, format: :json
 
