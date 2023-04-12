@@ -1,6 +1,6 @@
-require 'rails/railtie'
-require 'prx_auth/rails/ext/controller'
-require 'rack/prx_auth'
+require "rails/railtie"
+require "prx_auth/rails/ext/controller"
+require "rack/prx_auth"
 
 module PrxAuth::Rails
   class Railtie < ::Rails::Railtie

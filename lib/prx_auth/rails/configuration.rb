@@ -1,13 +1,13 @@
 class PrxAuth::Rails::Configuration
   attr_accessor :install_middleware,
-                :namespace,
-                :prx_client_id,
-                :prx_scope,
-                :id_host,
-                :cert_path
+    :namespace,
+    :prx_client_id,
+    :prx_scope,
+    :id_host,
+    :cert_path
 
-  DEFAULT_ID_HOST = 'id.prx.org'
-  DEFAULT_CERT_PATH = 'api/v1/certs'
+  DEFAULT_ID_HOST = "id.prx.org"
+  DEFAULT_CERT_PATH = "api/v1/certs"
 
   def initialize
     @install_middleware = true
@@ -21,15 +21,15 @@ class PrxAuth::Rails::Configuration
       if defined?(::Rails)
         klass = ::Rails.application.class
         parent_name = if ::Rails::VERSION::MAJOR >= 6
-                        klass.module_parent_name
-                      else
-                        klass.parent_name
-                      end
+          klass.module_parent_name
+        else
+          klass.parent_name
+        end
         klass_name = if parent_name.present?
-                       parent_name
-                     else
-                       klass.name
-                     end
+          parent_name
+        else
+          klass.name
+        end
 
         klass_name.underscore.intern
       end

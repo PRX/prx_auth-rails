@@ -9,8 +9,8 @@ module PrxAuth::Rails
     before_action :set_nonce!, only: [:new, :show]
     before_action :set_after_sign_in_path
 
-    ID_NONCE_SESSION_KEY = 'id_prx_openid_nonce'
-    DEFAULT_SCOPES = 'openid apps'
+    ID_NONCE_SESSION_KEY = "id_prx_openid_nonce"
+    DEFAULT_SCOPES = "openid apps"
 
     def new
       config = PrxAuth::Rails.configuration
@@ -25,12 +25,12 @@ module PrxAuth::Rails
       id_auth_params = {
         client_id: config.prx_client_id,
         nonce: fetch_nonce,
-        response_type: 'id_token token',
+        response_type: "id_token token",
         scope: scope,
-        prompt: 'necessary'
+        prompt: "necessary"
       }
 
-      url = '//' + config.id_host + '/authorize?' + id_auth_params.to_query
+      url = "//" + config.id_host + "/authorize?" + id_auth_params.to_query
 
       redirect_to url, allow_other_host: true
     end
@@ -54,7 +54,7 @@ module PrxAuth::Rails
         redirect_to after_sign_in_path_for(current_user)
       else
         clear_nonce!
-        redirect_to auth_error_sessions_path(error: params[:error] || 'unknown_error')
+        redirect_to auth_error_sessions_path(error: params[:error] || "unknown_error")
       end
     end
 
@@ -67,7 +67,7 @@ module PrxAuth::Rails
       elsif defined?(super)
         super
       else
-        '/'
+        "/"
       end
     end
 
@@ -78,11 +78,11 @@ module PrxAuth::Rails
     end
 
     def id_token
-      params.require('id_token')
+      params.require("id_token")
     end
 
     def access_token
-      params.require('access_token')
+      params.require("access_token")
     end
 
     def id_claims
@@ -106,11 +106,11 @@ module PrxAuth::Rails
     end
 
     def valid_nonce?
-      id_claims['nonce'].present? && id_claims['nonce'] == fetch_nonce
+      id_claims["nonce"].present? && id_claims["nonce"] == fetch_nonce
     end
 
     def users_match?
-      id_claims['sub'].present? && id_claims['sub'] == access_claims['sub']
+      id_claims["sub"].present? && id_claims["sub"] == access_claims["sub"]
     end
 
     def validate_token(token)
