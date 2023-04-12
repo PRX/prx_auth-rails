@@ -30,6 +30,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "pry"
   spec.add_development_dependency "sqlite3"
   spec.add_development_dependency "webmock"
+  spec.add_development_dependency "standard"
 
   spec.add_runtime_dependency "prx_auth", ">= 1.7.0"
 end
