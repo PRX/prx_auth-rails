@@ -48,12 +48,12 @@ module PrxAuth::Rails
     end
 
     def create
+      clear_nonce!
+
       if valid_nonce? && users_match?
-        clear_nonce!
         sign_in_user(access_token)
         redirect_to after_sign_in_path_for(current_user)
       else
-        clear_nonce!
         redirect_to auth_error_sessions_path(error: params[:error] || "unknown_error")
       end
     end

@@ -133,7 +133,7 @@ module PrxAuth
         options = {}
         options[:ssl_verify_mode] = OpenSSL::SSL::VERIFY_NONE if ::Rails.env.development?
         options["Authorization"] = "Bearer #{token}" if token
-        JSON.parse(URI.open(url, options).read)
+        JSON.parse(URI.open(url, options).read) # standard:disable Security/Open
       end
 
       # token from data set by prx_auth rack middleware
