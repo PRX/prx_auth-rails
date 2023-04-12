@@ -48,9 +48,10 @@ module PrxAuth::Rails
     end
 
     def create
+      valid_and_matching = valid_nonce? && users_match?
       clear_nonce!
 
-      if valid_nonce? && users_match?
+      if valid_and_matching
         sign_in_user(access_token)
         redirect_to after_sign_in_path_for(current_user)
       else
