@@ -1,18 +1,18 @@
-require 'prx_auth/rails/token'
-require 'open-uri'
+require "prx_auth/rails/token"
+require "open-uri"
 
 module PrxAuth
   module Rails
     module Controller
       class SessionTokenExpiredError < RuntimeError; end
 
-      PRX_AUTH_ENV_KEY = 'prx.auth'.freeze
-      PRX_JWT_SESSION_KEY = 'prx.auth.jwt'.freeze
+      PRX_AUTH_ENV_KEY = "prx.auth".freeze
+      PRX_JWT_SESSION_KEY = "prx.auth.jwt".freeze
       # subtracted from the JWT ttl
-      PRX_JWT_REFRESH_TTL = 300.freeze
-      PRX_ACCOUNT_MAPPING_SESSION_KEY = 'prx.auth.account.mapping'.freeze
-      PRX_USER_INFO_SESSION_KEY = 'prx.auth.info'.freeze
-      PRX_REFRESH_BACK_KEY = 'prx.auth.back'.freeze
+      PRX_JWT_REFRESH_TTL = 300
+      PRX_ACCOUNT_MAPPING_SESSION_KEY = "prx.auth.account.mapping".freeze
+      PRX_USER_INFO_SESSION_KEY = "prx.auth.info".freeze
+      PRX_REFRESH_BACK_KEY = "prx.auth.back".freeze
 
       def prx_auth_token
         env_token || session_token
@@ -24,7 +24,7 @@ module PrxAuth
       end
 
       def set_after_sign_in_path
-        return if self.class == PrxAuth::Rails::SessionsController
+        return if instance_of?(PrxAuth::Rails::SessionsController)
 
         session[PRX_REFRESH_BACK_KEY] = request.fullpath
       end
@@ -54,17 +54,17 @@ module PrxAuth
       def current_user_info
         session[PRX_USER_INFO_SESSION_KEY] ||= begin
           info = fetch_userinfo
-          info.slice('name', 'preferred_username', 'email', 'image_href', 'apps')
+          info.slice("name", "preferred_username", "email", "image_href", "apps")
         end
       end
 
       def current_user_name
-        current_user_info['name'] || current_user_info['preferred_username'] || current_user_info['email']
+        current_user_info["name"] || current_user_info["preferred_username"] || current_user_info["email"]
       end
 
       def current_user_apps
-        apps = (current_user_info.try(:[], 'apps') || []).map do |name, url|
-          label = name.sub(/^https?:\/\//, '').sub(/\..+/, '').capitalize
+        apps = (current_user_info.try(:[], "apps") || []).map do |name, url|
+          label = name.sub(/^https?:\/\//, "").sub(/\..+/, "").capitalize
           ["PRX #{label}", url]
         end
 
@@ -90,7 +90,7 @@ module PrxAuth
       end
 
       def account_name_for(account_id)
-        account_for(account_id).try(:[], 'name')
+        account_for(account_id).try(:[], "name")
       end
 
       def account_for(account_id)
@@ -110,8 +110,8 @@ module PrxAuth
         missing = ids - session[PRX_ACCOUNT_MAPPING_SESSION_KEY].keys
         if missing.present?
           fetch_accounts(missing).each do |account|
-            minimal = account.slice('name', 'type')
-            session[PRX_ACCOUNT_MAPPING_SESSION_KEY][account['id']] = minimal
+            minimal = account.slice("name", "type")
+            session[PRX_ACCOUNT_MAPPING_SESSION_KEY][account["id"]] = minimal
           end
         end
 
@@ -119,9 +119,9 @@ module PrxAuth
       end
 
       def fetch_accounts(ids)
-        ids_param = ids.map(&:to_s).join(',')
+        ids_param = ids.map(&:to_s).join(",")
         resp = fetch("/api/v1/accounts?account_ids=#{ids_param}")
-        resp.try(:[], '_embedded').try(:[], 'prx:items') || []
+        resp.try(:[], "_embedded").try(:[], "prx:items") || []
       end
 
       def fetch_userinfo
@@ -132,8 +132,8 @@ module PrxAuth
         url = "https://#{PrxAuth::Rails.configuration.id_host}#{path}"
         options = {}
         options[:ssl_verify_mode] = OpenSSL::SSL::VERIFY_NONE if ::Rails.env.development?
-        options['Authorization'] = "Bearer #{token}" if token
-        JSON.parse(URI.open(url, options).read)
+        options["Authorization"] = "Bearer #{token}" if token
+        JSON.parse(URI.open(url, options).read) # standard:disable Security/Open
       end
 
       # token from data set by prx_auth rack middleware
