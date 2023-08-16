@@ -41,4 +41,8 @@ class PrxAuth::Rails::Token
   def except(*resources)
     dup.except!(*resources)
   end
+
+  def empty_resources?
+    @token_data.empty_resources?
+  end
 end

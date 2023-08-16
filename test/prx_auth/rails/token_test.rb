@@ -55,4 +55,19 @@ describe PrxAuth::Rails::Token do
     token.except!("123")
     refute token.authorized?("123", :read)
   end
+
+  it "checks for empty resources" do
+    # wilcard tokens are never empty
+    refute token.empty_resources?
+    refute token.except("123").empty_resources?
+
+    # non-wildcard token
+    aur2 = {"123" => "anything"}
+    token_data2 = Rack::PrxAuth::TokenData.new("aur" => aur2, "scope" => scope, "sub" => sub)
+    mock_token_data2 = Minitest::Mock.new(token_data2)
+    token2 = PrxAuth::Rails::Token.new(mock_token_data2)
+
+    refute token2.empty_resources?
+    assert token2.except("123").empty_resources?
+  end
 end
