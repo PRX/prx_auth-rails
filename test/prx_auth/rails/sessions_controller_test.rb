@@ -92,7 +92,7 @@ module PrxAuth::Rails
     test "auth_error should return a formatted error message to the user" do
       get :auth_error, params: {error: "error_message"}
       assert response.code == "200"
-      assert response.body.match?(/Message was: <pre>error_message/)
+      assert response.body.match?(/Not authorized/)
     end
 
     test "auth_error should expect the error param" do
