@@ -32,4 +32,13 @@ class PrxAuth::Rails::Token
   def authorized_account_ids(scope)
     @token_data.authorized_account_ids(scope)
   end
+
+  def except!(*resources)
+    @token_data = @token_data.except(*resources)
+    self
+  end
+
+  def except(*resources)
+    dup.except!(*resources)
+  end
 end
