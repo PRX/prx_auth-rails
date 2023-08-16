@@ -10,7 +10,7 @@ module PrxAuth::Rails
     before_action :set_after_sign_in_path
 
     ID_NONCE_SESSION_KEY = "id_prx_openid_nonce"
-    DEFAULT_SCOPES = "openid apps"
+    DEFAULT_SCOPES = "openid"
 
     def new
       config = PrxAuth::Rails.configuration
