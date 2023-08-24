@@ -40,4 +40,34 @@ describe PrxAuth::Rails::Token do
     assert token.globally_authorized?(:test_app, :add)
     assert !token.globally_authorized?(:other_namespace, :add)
   end
+
+  it "returns a token except resources" do
+    token2 = token.except("123")
+
+    assert token.authorized?("123", :read)
+    refute token2.authorized?("123", :read)
+
+    # BUT cannot remove wildcard resources
+    assert token.authorized?("123", :add)
+    assert token2.authorized?("123", :add)
+
+    # the ! version modifies
+    token.except!("123")
+    refute token.authorized?("123", :read)
+  end
+
+  it "checks for empty resources" do
+    # wilcard tokens are never empty
+    refute token.empty_resources?
+    refute token.except("123").empty_resources?
+
+    # non-wildcard token
+    aur2 = {"123" => "anything"}
+    token_data2 = Rack::PrxAuth::TokenData.new("aur" => aur2, "scope" => scope, "sub" => sub)
+    mock_token_data2 = Minitest::Mock.new(token_data2)
+    token2 = PrxAuth::Rails::Token.new(mock_token_data2)
+
+    refute token2.empty_resources?
+    assert token2.except("123").empty_resources?
+  end
 end
