@@ -40,7 +40,7 @@ module PrxAuth::Rails
 
     def destroy
       sign_out_user
-      redirect_to after_sign_out_path
+      redirect_to after_sign_out_path, allow_other_host: true
     end
 
     def auth_error

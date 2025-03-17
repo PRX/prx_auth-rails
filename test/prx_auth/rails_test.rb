@@ -12,7 +12,7 @@ describe PrxAuth::Rails do
   end
 
   it "installs and configures prx_auth middleware" do
-    mw = MiniTest::Mock.new
+    mw = Minitest::Mock.new
     mw.expect :insert_after, nil do |c1, c2, cert_location:, issuer:|
       assert_equal Rack::Head, c1
       assert_equal Rack::PrxAuth, c2
@@ -20,7 +20,7 @@ describe PrxAuth::Rails do
       assert_equal "id.prx.test", issuer
     end
 
-    app = MiniTest::Mock.new
+    app = Minitest::Mock.new
     app.expect :middleware, mw
 
     subject.install_middleware!(app)

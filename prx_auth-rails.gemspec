@@ -26,7 +26,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "guard"
   spec.add_development_dependency "guard-minitest"
   spec.add_development_dependency "m", "~> 1.5"
-  spec.add_development_dependency "rails", "~> 6.1.0"
+  spec.add_development_dependency "rails", "~> 8.0.1"
   spec.add_development_dependency "pry"
   spec.add_development_dependency "sqlite3"
   spec.add_development_dependency "webmock"

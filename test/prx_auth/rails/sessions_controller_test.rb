@@ -58,7 +58,7 @@ module PrxAuth::Rails
 
           assert session[@nonce_session_key].nil?
           assert response.code == "302"
-          assert response.body.match?(/after-sign-in-path/)
+          assert response.headers["Location"].match?(/after-sign-in-path/)
         end
       end
     end
@@ -85,7 +85,7 @@ module PrxAuth::Rails
         session[@nonce_session_key] = "nonce-does-not-match"
         post :create, params: @token_params, format: :json
         assert response.code == "302"
-        assert response.body.match(/auth_error\?error=verification_failed/)
+        assert response.headers["Location"].match(/auth_error\?error=verification_failed/)
       end
     end
 
@@ -109,7 +109,7 @@ module PrxAuth::Rails
           post :create, params: @token_params, format: :json
 
           assert response.code == "302"
-          assert response.body.match?(/error=verification_failed/)
+          assert response.headers["Location"].match?(/error=verification_failed/)
         end
       end
     end
