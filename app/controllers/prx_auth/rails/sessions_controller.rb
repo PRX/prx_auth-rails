@@ -2,33 +2,31 @@
 
 module PrxAuth::Rails
   class SessionsController < ApplicationController
-    include PrxAuth::Rails::Engine.routes.url_helpers
-
-    skip_before_action :authenticate!, raise: false
+    skip_before_action :set_after_sign_in_path, :authenticate!, raise: false
 
     before_action :set_nonce!, only: [:new, :show]
-    before_action :set_after_sign_in_path
 
     ID_NONCE_SESSION_KEY = "id_prx_openid_nonce"
-    DEFAULT_SCOPES = "openid apps"
+    WILDCARD_SESSION_KEY = "prx.auth.wildcard"
+    DEFAULT_SCOPES = "openid"
 
     def new
       config = PrxAuth::Rails.configuration
-
-      scope =
-        if config.prx_scope.present?
-          "#{DEFAULT_SCOPES} #{config.prx_scope}"
-        else
-          DEFAULT_SCOPES
-        end
 
       id_auth_params = {
         client_id: config.prx_client_id,
         nonce: fetch_nonce,
         response_type: "id_token token",
-        scope: scope,
+        scope: "#{DEFAULT_SCOPES} #{config.prx_scope}".strip,
         prompt: "necessary"
       }
+
+      if session[WILDCARD_SESSION_KEY]
+        # TODO: wait for ID to update to prx_auth 1.8.1, then remove next line
+        id_auth_params[:scope] = DEFAULT_SCOPES
+        id_auth_params[:account] = "*"
+        id_auth_params[:scope] += " read-private" if session[WILDCARD_SESSION_KEY] == "readonly"
+      end
 
       url = "//" + config.id_host + "/authorize?" + id_auth_params.to_query
 
@@ -38,9 +36,7 @@ module PrxAuth::Rails
     def show
     end
 
-    def destroy
-      sign_out_user
-      redirect_to after_sign_out_path, allow_other_host: true
+    def access_error
     end
 
     def auth_error
@@ -55,8 +51,27 @@ module PrxAuth::Rails
         sign_in_user(access_token)
         redirect_to after_sign_in_path_for(current_user)
       else
+        session.delete(WILDCARD_SESSION_KEY)
         redirect_to auth_error_sessions_path(error: params[:error] || "unknown_error")
       end
+    end
+
+    def destroy
+      sign_out_user
+      redirect_to after_sign_out_path, allow_other_host: true
+    end
+
+    def logout
+      sign_out_user
+      redirect_to "//#{id_host}/session/sign_out", allow_other_host: true
+    end
+
+    def refresh
+      wildcard = params[:wildcard] if current_user_admin?
+      sign_out_user
+      session[WILDCARD_SESSION_KEY] = wildcard
+
+      redirect_to new_sessions_path
     end
 
     private
