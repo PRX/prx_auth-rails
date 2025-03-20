@@ -22,10 +22,9 @@ module PrxAuth::Rails
       }
 
       if session[WILDCARD_SESSION_KEY]
-        # TODO: wait for ID to update to prx_auth 1.8.1, then remove next line
-        id_auth_params[:scope] = DEFAULT_SCOPES
         id_auth_params[:account] = "*"
-        id_auth_params[:scope] += " read-private" if session[WILDCARD_SESSION_KEY] == "readonly"
+        # TODO: what if they need more than _just_ read-private?
+        id_auth_params[:scope] = "#{DEFAULT_SCOPES} read-private" if session[WILDCARD_SESSION_KEY] == "readonly"
       end
 
       url = "//" + config.id_host + "/authorize?" + id_auth_params.to_query
