@@ -1,6 +1,4 @@
 class ApplicationController < ActionController::Base
-  before_action :authenticate!
-
   def index
   end
 

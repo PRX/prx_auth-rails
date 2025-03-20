@@ -7,16 +7,19 @@ module PrxAuth::Rails::Ext
       @jwt_session_key = ApplicationController::PRX_JWT_SESSION_KEY
       @user_info_key = ApplicationController::PRX_USER_INFO_SESSION_KEY
       @account_mapping_key = ApplicationController::PRX_ACCOUNT_MAPPING_SESSION_KEY
-      @stub_claims = {"iat" => Time.now.to_i, "exp" => Time.now.to_i + 3600}
+      @stub_aur = {"1234" => "test_app:read-private"}
+      @stub_claims = {"iat" => Time.now.to_i, "exp" => Time.now.to_i + 3600, "aur" => @stub_aur}
     end
 
     # stub auth and init controller+session by getting a page
     def with_stubbed_auth(jwt)
       session[@jwt_session_key] = "some-jwt"
-      @controller.stub(:prx_auth_needs_refresh?, false) do
-        get :index
-        assert_equal response.code, "200"
-        yield
+      JSON::JWT.stub(:decode, @stub_claims) do
+        @controller.stub(:prx_auth_needs_refresh?, false) do
+          get :index
+          assert_equal response.code, "200"
+          yield
+        end
       end
     end
 
@@ -24,6 +27,16 @@ module PrxAuth::Rails::Ext
       get :index
       assert_equal response.code, "302"
       assert response.headers["Location"].ends_with?("/sessions/new")
+    end
+
+    test "redirects unless you have read-private in this namespace" do
+      session[@jwt_session_key] = "some-jwt"
+      @stub_claims["aur"]["1234"] = "other_app:read-private"
+      JSON::JWT.stub(:decode, @stub_claims) do
+        get :index
+        assert_equal response.code, "302"
+        assert_includes response.location, "auth/sessions/access_error"
+      end
     end
 
     test "uses a valid session token" do
