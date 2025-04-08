@@ -8,7 +8,7 @@ module PrxAuth::Rails
 
     ID_NONCE_SESSION_KEY = "id_prx_openid_nonce"
     WILDCARD_SESSION_KEY = "prx.auth.wildcard"
-    DEFAULT_SCOPES = "openid"
+    DEFAULT_SCOPES = "openid apps"
 
     def new
       config = PrxAuth::Rails.configuration

@@ -40,7 +40,7 @@ module PrxAuth::Rails
       PrxAuth::Rails.configuration.prx_scope = "feeder:*"
       get :new
       assert response.code == "302"
-      assert_includes response.location, "scope=openid+feeder%3A%2A"
+      assert_includes response.location, "scope=openid+apps+feeder%3A%2A"
 
       session[@wildcard_key] = "true"
       get :new
