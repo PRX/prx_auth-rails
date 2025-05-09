@@ -18,7 +18,7 @@ module PrxAuth
       PRX_REFRESH_BACK_KEY = "prx.auth.back".freeze
 
       included do
-        before_action :set_after_sign_in_path, :authenticate!
+        before_action :authenticate!
       end
 
       def prx_auth_token
@@ -30,8 +30,8 @@ module PrxAuth
         nil
       end
 
-      def set_after_sign_in_path
-        session[PRX_REFRESH_BACK_KEY] = request.fullpath
+      def set_after_sign_in_path(path = nil)
+        session[PRX_REFRESH_BACK_KEY] = path || request.fullpath
       end
 
       def prx_jwt
@@ -44,6 +44,7 @@ module PrxAuth
 
       def authenticate!
         if !current_user
+          set_after_sign_in_path
           redirect_to new_sessions_path
         elsif !current_user_access?
           redirect_to access_error_sessions_path
