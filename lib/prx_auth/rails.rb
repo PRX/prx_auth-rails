@@ -28,7 +28,7 @@ module PrxAuth
         host = configuration.id_host
         path = configuration.cert_path
         protocol =
-          if host.include?("localhost") || host.include?("127.0.0.1")
+          if host&.include?("localhost") || host&.include?("127.0.0.1")
             "http"
           else
             "https"
