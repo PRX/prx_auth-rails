@@ -2,7 +2,7 @@
 
 module PrxAuth::Rails
   class SessionsController < ApplicationController
-    skip_before_action :set_after_sign_in_path, :authenticate!, raise: false
+    skip_before_action :authenticate!, raise: false
 
     before_action :set_nonce!, only: [:new, :show]
 
@@ -70,6 +70,7 @@ module PrxAuth::Rails
       sign_out_user
       session[WILDCARD_SESSION_KEY] = wildcard
 
+      set_after_sign_in_path(request.referer.presence || "/")
       redirect_to new_sessions_path
     end
 
