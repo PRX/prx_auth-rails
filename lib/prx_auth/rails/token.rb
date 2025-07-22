@@ -29,6 +29,14 @@ class PrxAuth::Rails::Token
     @token_data.user_id
   end
 
+  def issued_at
+    @token_data.issued_at
+  end
+
+  def expiration_time
+    @token_data.expiration_time
+  end
+
   def authorized_account_ids(scope)
     @token_data.authorized_account_ids(scope)
   end

@@ -32,5 +32,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "webmock"
   spec.add_development_dependency "standard"
 
-  spec.add_runtime_dependency "prx_auth", ">= 1.8.0"
+  spec.add_runtime_dependency "prx_auth", ">= 1.8.2"
 end
