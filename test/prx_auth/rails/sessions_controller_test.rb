@@ -45,8 +45,13 @@ module PrxAuth::Rails
       session[@wildcard_key] = "true"
       get :new
       assert response.code == "302"
-      assert_includes response.location, "scope=openid"
+      assert_includes response.location, "scope=openid+apps+feeder%3A%2A"
       assert_includes response.location, "account=%2A"
+
+      session[@wildcard_key] = "feeder:whatev"
+      get :new
+      assert response.code == "302"
+      assert_includes response.location, "scope=openid+apps+feeder%3Awhatev"
     end
 
     test "create should validate a token and set the session variable" do
