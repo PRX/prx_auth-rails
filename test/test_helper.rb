@@ -3,6 +3,7 @@ require "coveralls"
 Coveralls.wear!
 
 require "minitest/autorun"
+require "minitest/mock"
 require "minitest/spec"
 require "minitest/pride"
 require "webmock/minitest"
