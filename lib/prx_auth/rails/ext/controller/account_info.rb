@@ -37,7 +37,7 @@ module PrxAuth
       end
 
       def fetch_accounts(ids)
-        ids_param = ids.map(&:to_s).join(",")
+        ids_param = ids.join(",")
         path = "/api/v1/accounts?account_ids=#{ids_param}"
         url = "https://#{PrxAuth::Rails.configuration.id_host}#{path}"
 
