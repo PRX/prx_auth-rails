@@ -17,15 +17,10 @@ module PrxAuth::Rails
         client_id: config.prx_client_id,
         nonce: fetch_nonce,
         response_type: "id_token token",
-        scope: "#{DEFAULT_SCOPES} #{config.prx_scope}".strip,
+        scope: "#{DEFAULT_SCOPES} #{session_scopes}".strip,
+        account: session_wildcard,
         prompt: "necessary"
-      }
-
-      if session[WILDCARD_SESSION_KEY]
-        id_auth_params[:account] = "*"
-        # TODO: what if they need more than _just_ read-private?
-        id_auth_params[:scope] = "#{DEFAULT_SCOPES} read-private" if session[WILDCARD_SESSION_KEY] == "readonly"
-      end
+      }.compact
 
       url = "//" + config.id_host + "/authorize?" + id_auth_params.to_query
 
@@ -137,6 +132,20 @@ module PrxAuth::Rails
 
     def id_host
       PrxAuth::Rails.configuration.id_host
+    end
+
+    def session_scopes
+      if ["true", "1", ""].include?(session[WILDCARD_SESSION_KEY].to_s)
+        PrxAuth::Rails.configuration.prx_scope
+      elsif session[WILDCARD_SESSION_KEY] == "readonly"
+        "read-private"
+      else
+        session[WILDCARD_SESSION_KEY]
+      end
+    end
+
+    def session_wildcard
+      "*" if session[WILDCARD_SESSION_KEY]
     end
   end
 end
